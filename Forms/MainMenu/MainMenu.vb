@@ -18,6 +18,8 @@
     End Sub
 
     Private Sub Disconnect_Click(sender As Object, e As EventArgs) Handles Disconnect.Click
+        GlobalData.AppRunning = False
+        'SendDisconnectedJSONToPrevPtr - add when configured
         Application.Exit()
     End Sub
 

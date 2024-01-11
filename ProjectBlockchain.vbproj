@@ -82,6 +82,9 @@
     <ApplicationManifest>My Project\app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>packages\Newtonsoft.Json.13.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Deployment" />
@@ -108,16 +111,15 @@
     <Import Include="System.Threading.Tasks" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Class Library\BinaryFileParser.vb" />
-    <Compile Include="Class Library\Block.vb" />
-    <Compile Include="Class Library\BlockChain.vb" />
-    <Compile Include="Class Library\Device.vb" />
-    <Compile Include="Class Library\DynQueue.vb" />
-    <Compile Include="Class Library\SHA256.vb" />
-    <Compile Include="Class Library\Time.vb" />
-    <Compile Include="Class Library\Transaction.vb" />
-    <Compile Include="Class Library\TransactionPool.vb" />
-    <Compile Include="Class Library\Wallet.vb" />
+    <Compile Include="Classes\Block.vb" />
+    <Compile Include="Classes\BlockChain.vb" />
+    <Compile Include="Classes\DataBufferQueue.vb" />
+    <Compile Include="Classes\Device.vb" />
+    <Compile Include="Classes\SHA256.vb" />
+    <Compile Include="Classes\Time.vb" />
+    <Compile Include="Classes\Transaction.vb" />
+    <Compile Include="Classes\TransactionPool.vb" />
+    <Compile Include="Classes\Wallet.vb" />
     <Compile Include="Forms\BaseViewingForm\BaseViewingForm.Designer.vb">
       <DependentUpon>BaseViewingForm.vb</DependentUpon>
     </Compile>
@@ -263,8 +265,10 @@
     <None Include="obj\Debug\ProjectBlockchain.vbproj.CoreCompileInputs.cache" />
     <None Include="obj\Debug\ProjectBlockchain.vbproj.GenerateResource.cache" />
     <None Include="obj\Debug\WindowsApp1.vbproj.AssemblyReference.cache" />
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Requests-Responses.txt" />
     <None Include="My Project\AppIcon.ico" />
     <Content Include="My Project\Logo.png" />
     <Content Include="obj\Debug\ProjectBlockchain.vbproj.FileListAbsolute.txt" />

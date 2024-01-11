@@ -27,8 +27,6 @@ Partial Class TestForm
         Me.txtstatus = New System.Windows.Forms.RichTextBox()
         Me.BeginTest = New System.Windows.Forms.Button()
         Me.PictureBox1 = New System.Windows.Forms.PictureBox()
-        Me.RichTextBox2 = New System.Windows.Forms.RichTextBox()
-        Me.RichTextBox1 = New System.Windows.Forms.RichTextBox()
         CType(Me.PictureBox1, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
         '
@@ -78,35 +76,12 @@ Partial Class TestForm
         Me.PictureBox1.TabIndex = 29
         Me.PictureBox1.TabStop = False
         '
-        'RichTextBox2
-        '
-        Me.RichTextBox2.Font = New System.Drawing.Font("Bahnschrift Light", 9.0!)
-        Me.RichTextBox2.ForeColor = System.Drawing.Color.Red
-        Me.RichTextBox2.Location = New System.Drawing.Point(305, 101)
-        Me.RichTextBox2.Name = "RichTextBox2"
-        Me.RichTextBox2.Size = New System.Drawing.Size(207, 172)
-        Me.RichTextBox2.TabIndex = 34
-        Me.RichTextBox2.Text = resources.GetString("RichTextBox2.Text")
-        '
-        'RichTextBox1
-        '
-        Me.RichTextBox1.Font = New System.Drawing.Font("Bahnschrift Light", 9.0!)
-        Me.RichTextBox1.ForeColor = System.Drawing.Color.Red
-        Me.RichTextBox1.Location = New System.Drawing.Point(94, 101)
-        Me.RichTextBox1.Name = "RichTextBox1"
-        Me.RichTextBox1.Size = New System.Drawing.Size(207, 172)
-        Me.RichTextBox1.TabIndex = 33
-        Me.RichTextBox1.Text = "Header view:" & Global.Microsoft.VisualBasic.ChrW(10) & "Block #X:" & Global.Microsoft.VisualBasic.ChrW(10) & "[timestamp]" & Global.Microsoft.VisualBasic.ChrW(10) & "[hash of previous block]" & Global.Microsoft.VisualBasic.ChrW(10) & "[nonce]" & Global.Microsoft.VisualBasic.ChrW(10) & "[hash of tran" &
-    "sactions]" & Global.Microsoft.VisualBasic.ChrW(10) & "Block #X-1:" & Global.Microsoft.VisualBasic.ChrW(10) & "etc..."
-        '
         'TestForm
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.BackColor = System.Drawing.Color.Gray
         Me.ClientSize = New System.Drawing.Size(607, 374)
-        Me.Controls.Add(Me.RichTextBox2)
-        Me.Controls.Add(Me.RichTextBox1)
         Me.Controls.Add(Me.PictureBox1)
         Me.Controls.Add(Me.BeginTest)
         Me.Controls.Add(Me.txtstatus)
@@ -114,6 +89,7 @@ Partial Class TestForm
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D
         Me.HelpButton = True
         Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
+        Me.MaximizeBox = False
         Me.Name = "TestForm"
         Me.Text = "Testing..."
         CType(Me.PictureBox1, System.ComponentModel.ISupportInitialize).EndInit()
@@ -125,6 +101,4 @@ Partial Class TestForm
     Public WithEvents txtstatus As RichTextBox
     Friend WithEvents BeginTest As Button
     Friend WithEvents PictureBox1 As PictureBox
-    Friend WithEvents RichTextBox2 As RichTextBox
-    Friend WithEvents RichTextBox1 As RichTextBox
 End Class

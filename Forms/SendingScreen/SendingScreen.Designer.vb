@@ -66,9 +66,9 @@ Partial Class SendingScreen
         Me.Disconnect.BackColor = System.Drawing.Color.FromArgb(CType(CType(245, Byte), Integer), CType(CType(0, Byte), Integer), CType(CType(50, Byte), Integer))
         Me.Disconnect.Font = New System.Drawing.Font("Bahnschrift", 12.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.Disconnect.ForeColor = System.Drawing.Color.Goldenrod
-        Me.Disconnect.Location = New System.Drawing.Point(206, 257)
+        Me.Disconnect.Location = New System.Drawing.Point(204, 257)
         Me.Disconnect.Name = "Disconnect"
-        Me.Disconnect.Size = New System.Drawing.Size(312, 66)
+        Me.Disconnect.Size = New System.Drawing.Size(314, 66)
         Me.Disconnect.TabIndex = 17
         Me.Disconnect.Text = "DISCONNECT FROM WAYFARER SYSTEM"
         Me.Disconnect.UseVisualStyleBackColor = False
@@ -89,7 +89,7 @@ Partial Class SendingScreen
         Me.RecipientAddressTxt.BackColor = System.Drawing.Color.Ivory
         Me.RecipientAddressTxt.Font = New System.Drawing.Font("Bahnschrift Light", 10.0!)
         Me.RecipientAddressTxt.ForeColor = System.Drawing.Color.Red
-        Me.RecipientAddressTxt.Location = New System.Drawing.Point(350, 84)
+        Me.RecipientAddressTxt.Location = New System.Drawing.Point(350, 75)
         Me.RecipientAddressTxt.Name = "RecipientAddressTxt"
         Me.RecipientAddressTxt.Size = New System.Drawing.Size(273, 53)
         Me.RecipientAddressTxt.TabIndex = 22
@@ -100,20 +100,20 @@ Partial Class SendingScreen
         Me.SendingAmountTxt.BackColor = System.Drawing.Color.Ivory
         Me.SendingAmountTxt.Font = New System.Drawing.Font("Bahnschrift Light", 10.0!)
         Me.SendingAmountTxt.ForeColor = System.Drawing.Color.Red
-        Me.SendingAmountTxt.Location = New System.Drawing.Point(350, 143)
+        Me.SendingAmountTxt.Location = New System.Drawing.Point(350, 133)
         Me.SendingAmountTxt.Name = "SendingAmountTxt"
-        Me.SendingAmountTxt.Size = New System.Drawing.Size(273, 53)
+        Me.SendingAmountTxt.Size = New System.Drawing.Size(273, 66)
         Me.SendingAmountTxt.TabIndex = 23
         Me.SendingAmountTxt.Text = "[Enter an amount to send - must be less than or equal to balance.]"
         '
         'CheckConfirm
         '
         Me.CheckConfirm.BackColor = System.Drawing.Color.FromArgb(CType(CType(192, Byte), Integer), CType(CType(192, Byte), Integer), CType(CType(0, Byte), Integer))
-        Me.CheckConfirm.Font = New System.Drawing.Font("Bahnschrift Light", 10.0!)
+        Me.CheckConfirm.Font = New System.Drawing.Font("Bahnschrift", 10.0!, System.Drawing.FontStyle.Bold)
         Me.CheckConfirm.ForeColor = System.Drawing.Color.Honeydew
-        Me.CheckConfirm.Location = New System.Drawing.Point(206, 214)
+        Me.CheckConfirm.Location = New System.Drawing.Point(204, 206)
         Me.CheckConfirm.Name = "CheckConfirm"
-        Me.CheckConfirm.Size = New System.Drawing.Size(417, 33)
+        Me.CheckConfirm.Size = New System.Drawing.Size(419, 35)
         Me.CheckConfirm.TabIndex = 28
         Me.CheckConfirm.Text = "CHECK DETAILS AND SEND TRANSACTION TO THE POOL"
         Me.CheckConfirm.UseVisualStyleBackColor = False
@@ -122,8 +122,9 @@ Partial Class SendingScreen
         '
         Me.Label2.BackColor = System.Drawing.Color.FromArgb(CType(CType(224, Byte), Integer), CType(CType(224, Byte), Integer), CType(CType(224, Byte), Integer))
         Me.Label2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.Label2.Font = New System.Drawing.Font("Bahnschrift Light", 8.0!)
-        Me.Label2.Location = New System.Drawing.Point(206, 84)
+        Me.Label2.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Label2.ForeColor = System.Drawing.Color.FromArgb(CType(CType(139, Byte), Integer), CType(CType(43, Byte), Integer), CType(CType(110, Byte), Integer))
+        Me.Label2.Location = New System.Drawing.Point(206, 75)
         Me.Label2.Name = "Label2"
         Me.Label2.Size = New System.Drawing.Size(138, 53)
         Me.Label2.TabIndex = 30
@@ -134,10 +135,11 @@ Partial Class SendingScreen
         '
         Me.Label3.BackColor = System.Drawing.Color.FromArgb(CType(CType(224, Byte), Integer), CType(CType(224, Byte), Integer), CType(CType(224, Byte), Integer))
         Me.Label3.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
-        Me.Label3.Font = New System.Drawing.Font("Bahnschrift Light", 8.0!)
-        Me.Label3.Location = New System.Drawing.Point(206, 143)
+        Me.Label3.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.Label3.ForeColor = System.Drawing.Color.FromArgb(CType(CType(139, Byte), Integer), CType(CType(43, Byte), Integer), CType(CType(110, Byte), Integer))
+        Me.Label3.Location = New System.Drawing.Point(206, 133)
         Me.Label3.Name = "Label3"
-        Me.Label3.Size = New System.Drawing.Size(138, 53)
+        Me.Label3.Size = New System.Drawing.Size(138, 66)
         Me.Label3.TabIndex = 31
         Me.Label3.Text = "ENTER AMOUNT TO SEND HERE - MUST BE LESS THAN BALANCE"
         Me.Label3.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
@@ -184,6 +186,7 @@ Partial Class SendingScreen
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D
         Me.HelpButton = True
         Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
+        Me.MaximizeBox = False
         Me.Name = "SendingScreen"
         Me.Text = "SENDING CRYPTOCURRENCY"
         CType(Me.PictureBox1, System.ComponentModel.ISupportInitialize).EndInit()

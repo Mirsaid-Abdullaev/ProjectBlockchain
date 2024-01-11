@@ -1,163 +1,68 @@
 ﻿Imports System.Net
 Imports System.Net.Sockets
+Imports System.Text
 Imports System.Text.Encoding
 Imports System.Threading
+Imports Newtonsoft.Json
 
 Namespace Network
+
     Module NetworkVariables
-        Public Const ServerPort As Integer = 24000 '24000 will be the port for server comms between peers (both TCP and UDP)
-        Public Const ClientPort As Integer = 36000 '36000 will be the port for client comms between peers (both TCP and UDP)
-        Public ReadOnly MulticastAddress As IPAddress = IPAddress.Parse("224.0.0.26")
-        Public DeviceIP As IPAddress = GetOwnIP()
-        Public DeviceName As String = GetDeviceName()
-        Public Const AppIDMessage As String = "WAYFARER_V1"
-        Public ReadOnly NodeTypesDict As Object() = {"ROOT", "BRANCH", "LEAF", "INIT"}
+        Public ReadOnly NodeTypesDict As String() = {"ROOT", "BRANCH", "LEAF", "INIT"} '0=ROOT, 1=BRANCH, 2=LEAF, 3=INIT
         Public NodeType As String = NodeTypesDict(3)
-        Public PreviousPointer As String = "INIT"
-        Public NextPointer As String = "INIT"
-        Public AppRunning As Boolean = False
+        Public PreviousPointer As String = "INIT" 'IPAddress of device connected; INIT if not connected to network; NULL if ROOT
+        Public NextPointer As String = "INIT" 'same as above but NULL means LEAF node
         Public Connected As Boolean = False
-
-        Public ParentForm As TestForm
     End Module
 
-    Module AckDiscovery
-        Private UDPAckClient As UdpClient
-        Private UDPAckEndpoint As IPEndPoint
-        Private UDPAckListenerClient As UdpClient
-        Private UDPAckListenerEndpoint As IPEndPoint
 
-        Private AckBroadcastThread As Thread
-        Private AckListenerThread As Thread
-        Private StatusUpdateThread As Thread
-        Private AckConnThread As Thread
-        Private ConnThread As Thread
-
-
-        Private WF_DevicesList As List(Of Device)
-        Private WF_DevicesDict As Dictionary(Of IPAddress, Device)
-        '{AppIDMessage, DeviceIP.ToString, DeviceName, NodeType, PreviousPointer, NextPointer}
-        'worst case msg: 11bytes, 15 bytes, 15 bytes, 6 bytes, 15 bytes, 15 bytes - total 82 bytes/broadcast
-        'targeting a 50Mb/s bandwidth, 6.25MB/s, so take theoretical 1% max bandwidth usage = 62,500 bytes/second
-        'assume a theoretical max of 10 devices on this LAN, so allowance per device is 62,500/10 bytes/second = 6250 bytes/s
-        'this means a 6250/82 broadcasts/second allowance per device = around 76 broadcasts per device per second.
-        'will use 60 broadcasts/second to allow for overheads during communications
-        Private ReadOnly BroadcastMessage As String = GetMessage()
+    Public Class TCPHandler
+        Private TCPClient As TcpClient
+        Private TCPServer As TcpListener
+        'way to 
+    End Class
 
 
 
-        Public Sub Initialise(ParFrm As TestForm)
-            ParentForm = ParFrm
-            Thread.Sleep(2000)
-            AppRunning = True
 
-            WF_DevicesList = New List(Of Device)
-            WF_DevicesDict = New Dictionary(Of IPAddress, Device)
-            'note: pull these out to networkvariables to avoid multisocket exceptions
-            UDPAckClient = New UdpClient(ClientPort) With {.EnableBroadcast = True} 'broadcasting client - all devices broadcast from 36000 to 24000
-            UDPAckClient.JoinMulticastGroup(MulticastAddress)
-            UDPAckEndpoint = New IPEndPoint(MulticastAddress, ServerPort) 'endpoint for broadcasters - to all LAN IP's on port 24000
+    Public Class ConnectionHandler
+        Private udpClient As UdpClient
 
-            UDPAckListenerClient = New UdpClient(ServerPort)
-            UDPAckListenerClient.JoinMulticastGroup(MulticastAddress)
-            UDPAckListenerEndpoint = New IPEndPoint(IPAddress.Any, ServerPort)
+        Public Sub New()
 
-            AckBroadcastThread = New Thread(AddressOf AckBroadcaster) With {.IsBackground = True}
-            AckListenerThread = New Thread(AddressOf AckListener) With {.IsBackground = True}
+            udpClient = New UdpClient() With {.EnableBroadcast = True}
 
-            StatusUpdateThread = New Thread(AddressOf StatusChecker) With {.IsBackground = True}
-            ConnThread = New Thread(AddressOf Connection) With {.IsBackground = True}
-            AckConnThread = New Thread(AddressOf ProcessConnRequest) With {.IsBackground = True}
+            Dim listenerThread As New Thread(AddressOf ListenForBroadcasts)
+            listenerThread.Start()
+            Dim broadcastThread As New Thread(AddressOf BroadcastConnectionRequest)
+            broadcastThread.Start()
+        End Sub
 
+        Private Sub ListenForBroadcasts()
 
-            Try
-                AckBroadcastThread.Start()
-                AckListenerThread.Start()
-                'StatusUpdateThread.Start()
-            Catch ex As Exception
-                ParentForm.UpdateStatusTxt("Error initialising threads: " + ex.Message + ": " + TimeString)
-            End Try
+        End Sub
+
+        Private Sub BroadcastConnectionRequest()
+
         End Sub
 
 
 
+        Private Function IsRequestRelevant(request As ConnectionRequest) As Boolean
+            'to test whether the json received is actually valid, e.g. checking appidmessage and the messagetype field
+            Return True
+        End Function
+
+    End Class
 
 
-        Private Sub AckListener() 'udp listener server for receiving broadcasts
-            ParentForm.UpdateStatusTxt("Listening to port 24000.")
-            Try
-                While AppRunning
-                    UDPAckListenerEndpoint = New IPEndPoint(IPAddress.Any, ClientPort)
-                    Dim ReceivedBytes As Byte()
-                    Try
-                        ReceivedBytes = UDPAckListenerClient.Receive(UDPAckListenerEndpoint)
-                    Catch ex As Exception
-                        ReceivedBytes = {99}
-                    End Try
-                    Dim Msg As String = ASCII.GetString(ReceivedBytes)
-
-                    If Msg.StartsWith(AppIDMessage) AndAlso Not WF_DevicesDict.ContainsKey(UDPAckListenerEndpoint.Address) Then 'AndAlso Not IPAddress.Equals(UDPAckListenerEndpoint.Address, DeviceIP)
-                        ParentForm.UpdateStatusTxt("New broadcaster found." + UDPAckListenerEndpoint.Address.ToString + ":" + UDPAckListenerEndpoint.Port.ToString + ", " + TimeString)
-                        Dim Temp As String = ""
-                        Dim ItemArr(4) As String 'to store the values for saving to a Device class instance later
-                        Dim Counter As Byte = 0
-                        Msg = Msg.Substring(12) + ":"
-                        For Each Item As Char In Msg
-                            If Item <> ":" Then
-                                Temp += Item
-                            Else
-                                ItemArr(Counter) = Temp
-                                Temp = ""
-                                Counter += 1
-                            End If
-                        Next
-                        Dim TempDevice As New Device(IPAddress.Parse(ItemArr(0)), ItemArr(1), ItemArr(2), ItemArr(3), ItemArr(4)) 'ItemArr holds the split Msg string into its corresp. fields
-                        WF_DevicesList.Add(TempDevice)
-                        WF_DevicesDict.Add(IPAddress.Parse(ItemArr(0)), TempDevice) 'dictionary for referencing specific Device instances
-                    End If
-                End While
-            Catch ex As Exception
-                ParentForm.UpdateStatusTxt("Error while listening to UDP: " + ex.Message + " at " + TimeString)
-            End Try
-        End Sub
-        Private Sub AckBroadcaster() 'broadcaster thread sends (1000/n) datagrams per second, where n is the thread sleep value
-
-            ParentForm.UpdateStatusTxt("Broadcasting to port 24000.")
-            While AppRunning
-                Try
-                    Dim BCMsg() As Byte = ASCII.GetBytes(BroadcastMessage)
-                    UDPAckClient.Send(BCMsg, BCMsg.Length, UDPAckEndpoint)
-                    Thread.Sleep(17)
-                Catch ex As Exception
-                    ParentForm.UpdateStatusTxt("Error while sending datagram: " + ex.Message + ": " + TimeString)
-                End Try
-            End While
-        End Sub
-
-        Private Sub Connection(LeafIPEndpoint As IPEndPoint)
-            'use a udp transmission "WFCONNECT" to send to leaf node - result should be a referential connection rather than a full logical conn.
-        End Sub
-        Private Sub ProcessConnRequest()
-            'use a received udp transmission "WFCONNECT" to determine if connection is possible (if node is leaf node)
-        End Sub
-
-        Private Sub StatusChecker() 'thread to check for existing broadcasters' messages and status of network
-
-        End Sub
-        Public Sub DisconnectFromNetwork() 'ending the broadcast - will only happen at exit of application or disconnection from network etc.
-            AppRunning = False
-            Try
-                'add a DISCONECTION broadcast here too e.g. "WAYFARER_V1:DISCONNECT:deviceip etc..." so that others update their records
-                ParentForm.UpdateStatusTxt("Broadcast stopped to port 24000.")
-                WF_DevicesList = New List(Of Device)
-                WF_DevicesDict = New Dictionary(Of IPAddress, Device)
-            Catch ex As Exception
-                ParentForm.UpdateStatusTxt("Error in exiting broadcasting thread: " + ex.Message + ": " + TimeString)
-            End Try
-        End Sub
-    End Module
 
     Module MiscLibrary
+        Public Class DeviceUser
+            Public DeviceName As String
+            Public DeviceIP As IPAddress
+            Public NodeType As String
+        End Class
         Public Function GetOwnIP() As IPAddress
             Dim Hostname As String = Dns.GetHostName
             Dim DeviceIP As IPAddress = IPAddress.Loopback
@@ -172,7 +77,7 @@ Namespace Network
 
         Public Function GetDeviceName() As String
             Try
-                If Dns.GetHostName.Length < 15 Then
+                If Dns.GetHostName.Length > 15 Then
                     Return Dns.GetHostName.Substring(0, 15)
                 Else
                     Return Dns.GetHostName
@@ -181,11 +86,211 @@ Namespace Network
                 Return "E" + TimeString.Substring(0, 2) + TimeString.Substring(3, 2) + TimeString.Substring(6, 2)
             End Try
         End Function
-
-        Public Function GetMessage() As String
-            Dim Result As String = AppIDMessage & ":" & DeviceIP.ToString & ":" & DeviceName & ":" & NodeType & ":" & PreviousPointer.ToString & ":" & NextPointer.ToString
-            Return Result
-        End Function
     End Module
 
+    Module RequestsResponses
+        Public MustInherit Class Request 'abstract base class for all requests
+            Public Property MessageType As String
+            Public Property DeviceName As String
+            Public Property DeviceIP As String
+            Public ReadOnly Property AppIDMessage As String = "WAYFARER_V1"
+            Public Sub New(RequestType As String)
+                MessageType = RequestType
+                DeviceName = GetDeviceName()
+                DeviceIP = GetOwnIP().ToString
+            End Sub
+
+            Public MustOverride Function GetJSONMessage() As String 'abstract function - redefined in child classes
+        End Class
+
+        Public Class ConnectionRequest
+            Inherits Request
+            Public ReadOnly Property NodeType As String
+            Public Overrides Function GetJSONMessage() As String
+                Return JsonConvert.SerializeObject(Me)
+            End Function
+            Public Sub New()
+                MyBase.New("ConnectionRequest")
+                NodeType = "INIT"
+            End Sub
+        End Class
+
+        Public Class GetBlockchainDataRequest
+            Inherits Request
+            Public ReadOnly Property StartBlock As UInteger
+            Public Overrides Function GetJSONMessage() As String
+                Return JsonConvert.SerializeObject(Me)
+            End Function
+            Public Sub New(StartBlock As UInteger)
+                MyBase.New("GetBlockchainDataRequest")
+                Me.StartBlock = StartBlock
+            End Sub
+        End Class
+
+        Public Class GetTransactionPoolRequest
+            Inherits Request
+            Public Overrides Function GetJSONMessage() As String
+                Return JsonConvert.SerializeObject(Me)
+            End Function
+            Public Sub New()
+                MyBase.New("GetTransactionPoolRequest")
+            End Sub
+        End Class
+
+        Public Class NewTransactionRequest
+            Inherits Request
+            Public ReadOnly Property Timestamp As String
+            Public ReadOnly Property Sender As String
+            Public ReadOnly Property Recipient As String
+            Public ReadOnly Property Quantity As Single
+            Public Overrides Function GetJSONMessage() As String
+                Return JsonConvert.SerializeObject(Me)
+            End Function
+            Public Sub New(Transact As Transaction)
+                MyBase.New("NewTransactionRequest")
+                Me.Timestamp = Transact.Timestamp
+                Me.Recipient = Transact.Recipient
+                Me.Sender = Transact.Sender
+                Me.Quantity = Transact.Quantity
+            End Sub
+        End Class
+
+        Public Class ValidateNewMinedBlockRequest
+            Inherits Request
+            Public ReadOnly Property Index As UInteger
+            Public ReadOnly Property PrevHash As String
+            Public ReadOnly Property Nonce As UInteger
+            Public ReadOnly Property Timestamp As String
+            Public ReadOnly Property Transactions As String
+            Public ReadOnly Property Hash As String
+            Public Overrides Function GetJSONMessage() As String
+                Return JsonConvert.SerializeObject(Me)
+            End Function
+            Public Sub New(ProposedBlock As Block)
+                MyBase.New("ValidateNewMinedBlockRequest")
+                Me.Index = ProposedBlock.GetIndex
+                Me.Hash = ProposedBlock.GetHash
+                Me.PrevHash = ProposedBlock.GetPrevHash
+                Me.Timestamp = ProposedBlock.GetTimestamp
+                Me.Transactions = GetTransactionListAsString(ProposedBlock.TransactionList)
+                Me.Nonce = ProposedBlock.GetNonce
+            End Sub
+        End Class
+        Public Class TransmitNewBlockRequest
+            Inherits Request
+            Public ReadOnly Property Index As UInteger
+            Public ReadOnly Property PrevHash As String
+            Public ReadOnly Property Nonce As UInteger
+            Public ReadOnly Property Timestamp As String
+            Public ReadOnly Property Transactions As String
+            Public ReadOnly Property Hash As String
+            Public Overrides Function GetJSONMessage() As String
+                Return JsonConvert.SerializeObject(Me)
+            End Function
+            Public Sub New(ValidatedBlock As Block)
+                MyBase.New("TransmitNewBlockRequest")
+                Me.Index = ValidatedBlock.GetIndex
+                Me.Hash = ValidatedBlock.GetHash
+                Me.PrevHash = ValidatedBlock.GetPrevHash
+                Me.Timestamp = ValidatedBlock.GetTimestamp
+                Me.Transactions = GetTransactionListAsString(ValidatedBlock.TransactionList)
+                Me.Nonce = ValidatedBlock.GetNonce
+            End Sub
+        End Class
+
+        '
+        'RESPONSES
+        '
+
+        Public MustInherit Class Response 'abstract base response
+            Public Property MessageType As String
+            Public Property DeviceName As String
+            Public Property DeviceIP As String
+            Public ReadOnly Property AppIDMessage As String = "WAYFARER_V1"
+            Public Sub New(ResponseType As String)
+                MessageType = ResponseType
+                DeviceName = GetDeviceName()
+                DeviceIP = GetOwnIP().ToString
+            End Sub
+
+            Public MustOverride Function GetJSONMessage() As String 'abstract function - redefined in child classes
+        End Class
+
+        Public Class ConnectionResponse
+            Inherits Response
+            Public ReadOnly Property Status As String
+            Public Overrides Function GetJSONMessage() As String
+                Return JsonConvert.SerializeObject(Me)
+            End Function
+            Public Sub New(Status As String)
+                MyBase.New("ConnectionResponse")
+                Me.Status = Status
+            End Sub
+        End Class
+
+        Public Class BlockResponse
+            Inherits Response
+            Public ReadOnly Property Index As UInteger
+            Public ReadOnly Property PrevHash As String
+            Public ReadOnly Property Nonce As UInteger
+            Public ReadOnly Property Timestamp As String
+            Public ReadOnly Property Transactions As String
+            Public ReadOnly Property Hash As String
+            Public ReadOnly Property Status As String
+            Public Overrides Function GetJSONMessage() As String
+                Return JsonConvert.SerializeObject(Me)
+            End Function
+            Public Sub New(SendingBlock As Block, Status As String)
+                MyBase.New("BlockResponse")
+                Me.Status = Status
+                Me.Index = SendingBlock.GetIndex
+                Me.Hash = SendingBlock.GetHash
+                Me.PrevHash = SendingBlock.GetPrevHash
+                Me.Timestamp = SendingBlock.GetTimestamp
+                Me.Transactions = GetTransactionListAsString(SendingBlock.TransactionList)
+                Me.Nonce = SendingBlock.GetNonce
+            End Sub
+        End Class
+
+        Public Class TransactionPoolResponse
+            Inherits Response
+            Public ReadOnly Property Status As String
+            Public ReadOnly Property Transactions As String
+            Public Overrides Function GetJSONMessage() As String
+                Return JsonConvert.SerializeObject(Me)
+            End Function
+            Public Sub New(Status As String, CurrentTransactionPool As TransactionPool)
+                MyBase.New("TransactionPoolResponse")
+                Me.Status = Status
+                Me.Transactions = CurrentTransactionPool.GetTransactions
+            End Sub
+        End Class
+
+        Public Class NewTransactionResponse
+            Inherits Response
+            Public ReadOnly Property Status As String
+            Public Overrides Function GetJSONMessage() As String
+                Return JsonConvert.SerializeObject(Me)
+            End Function
+            Public Sub New(Status As String)
+                MyBase.New("NewTransactionResponse")
+                Me.Status = Status
+            End Sub
+        End Class
+
+        Public Class ValidateNewMinedBlockResponse
+            Inherits Response
+            Public ReadOnly Property Status As String 'accept or decline the block - if accept from both linked nodes, block is ok
+            Public Overrides Function GetJSONMessage() As String
+                Return JsonConvert.SerializeObject(Me)
+            End Function
+            Public Sub New(Status As String)
+                MyBase.New("ValidateNewMinedBlockResponse")
+                Me.Status = Status
+            End Sub
+        End Class
+
+
+
+    End Module
 End Namespace

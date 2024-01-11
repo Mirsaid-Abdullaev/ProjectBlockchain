@@ -129,6 +129,7 @@ Partial Class NetStatusView
         Me.Controls.Add(Me.GetHelpManual)
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D
         Me.HelpButton = True
+        Me.MaximizeBox = False
         Me.Name = "NetStatusView"
         Me.Text = "NETWORK STATUS VIEW"
         CType(Me.PictureBox1, System.ComponentModel.ISupportInitialize).EndInit()

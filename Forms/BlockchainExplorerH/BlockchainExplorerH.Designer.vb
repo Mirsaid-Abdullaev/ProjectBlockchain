@@ -27,9 +27,9 @@ Partial Class BlockchainExplorerH
         Me.Label1 = New System.Windows.Forms.Label()
         Me.Disconnect = New System.Windows.Forms.Button()
         Me.StatusLbl = New System.Windows.Forms.Label()
-        Me.BlockchainTxt = New System.Windows.Forms.RichTextBox()
         Me.BackBtn = New System.Windows.Forms.Button()
         Me.PictureBox1 = New System.Windows.Forms.PictureBox()
+        Me.BlockchainTxt = New System.Windows.Forms.RichTextBox()
         CType(Me.PictureBox1, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
         '
@@ -80,18 +80,6 @@ Partial Class BlockchainExplorerH
         Me.StatusLbl.TabIndex = 18
         Me.StatusLbl.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
         '
-        'BlockchainTxt
-        '
-        Me.BlockchainTxt.BackColor = System.Drawing.Color.Ivory
-        Me.BlockchainTxt.Font = New System.Drawing.Font("Bahnschrift Light", 10.0!)
-        Me.BlockchainTxt.ForeColor = System.Drawing.Color.Red
-        Me.BlockchainTxt.Location = New System.Drawing.Point(189, 83)
-        Me.BlockchainTxt.Name = "BlockchainTxt"
-        Me.BlockchainTxt.ReadOnly = True
-        Me.BlockchainTxt.Size = New System.Drawing.Size(431, 268)
-        Me.BlockchainTxt.TabIndex = 23
-        Me.BlockchainTxt.Text = ""
-        '
         'BackBtn
         '
         Me.BackBtn.BackColor = System.Drawing.Color.FromArgb(CType(CType(245, Byte), Integer), CType(CType(0, Byte), Integer), CType(CType(50, Byte), Integer))
@@ -114,15 +102,27 @@ Partial Class BlockchainExplorerH
         Me.PictureBox1.TabIndex = 24
         Me.PictureBox1.TabStop = False
         '
+        'BlockchainTxt
+        '
+        Me.BlockchainTxt.BackColor = System.Drawing.Color.Ivory
+        Me.BlockchainTxt.Font = New System.Drawing.Font("Bahnschrift Light", 10.0!)
+        Me.BlockchainTxt.ForeColor = System.Drawing.Color.Red
+        Me.BlockchainTxt.Location = New System.Drawing.Point(187, 83)
+        Me.BlockchainTxt.Name = "BlockchainTxt"
+        Me.BlockchainTxt.Size = New System.Drawing.Size(433, 268)
+        Me.BlockchainTxt.TabIndex = 35
+        Me.BlockchainTxt.Text = "Header view:" & Global.Microsoft.VisualBasic.ChrW(10) & "Block #X:" & Global.Microsoft.VisualBasic.ChrW(10) & "[timestamp]" & Global.Microsoft.VisualBasic.ChrW(10) & "[hash of previous block]" & Global.Microsoft.VisualBasic.ChrW(10) & "[nonce]" & Global.Microsoft.VisualBasic.ChrW(10) & "[hash of tran" &
+    "sactions]" & Global.Microsoft.VisualBasic.ChrW(10) & "Block #X-1:" & Global.Microsoft.VisualBasic.ChrW(10) & "etc..."
+        '
         'BlockchainExplorerH
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.BackColor = System.Drawing.Color.FromArgb(CType(CType(60, Byte), Integer), CType(CType(60, Byte), Integer), CType(CType(70, Byte), Integer))
         Me.ClientSize = New System.Drawing.Size(634, 420)
+        Me.Controls.Add(Me.BlockchainTxt)
         Me.Controls.Add(Me.BackBtn)
         Me.Controls.Add(Me.PictureBox1)
-        Me.Controls.Add(Me.BlockchainTxt)
         Me.Controls.Add(Me.StatusLbl)
         Me.Controls.Add(Me.Disconnect)
         Me.Controls.Add(Me.Label1)
@@ -130,6 +130,7 @@ Partial Class BlockchainExplorerH
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D
         Me.HelpButton = True
         Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
+        Me.MaximizeBox = False
         Me.Name = "BlockchainExplorerH"
         Me.Text = "BLOCKCHAIN EXPLORER: HEADER VIEW"
         CType(Me.PictureBox1, System.ComponentModel.ISupportInitialize).EndInit()

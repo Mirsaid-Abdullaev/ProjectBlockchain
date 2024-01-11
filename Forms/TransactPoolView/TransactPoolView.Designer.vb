@@ -130,6 +130,7 @@ Partial Class TransactPoolView
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D
         Me.HelpButton = True
         Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
+        Me.MaximizeBox = False
         Me.Name = "TransactPoolView"
         Me.Text = "TRANSACTION POOL VIEW"
         CType(Me.PictureBox1, System.ComponentModel.ISupportInitialize).EndInit()

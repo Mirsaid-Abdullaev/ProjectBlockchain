@@ -16,6 +16,7 @@ Module Design 'need to finish custommsgbox
             Else
                 Me.Text = "Message Box"
             End If
+            Me.MaximizeBox = False
             Me.Height = 300
             Me.Width = 400
             Me.StartPosition = FormStartPosition.CenterScreen
@@ -82,7 +83,7 @@ Module Design 'need to finish custommsgbox
             Me.Controls.Add(MessageHeadTxt)
             Me.Controls.Add(InputListBox)
             Try
-                For Each Wallet As String In Directory.EnumerateFiles(FileSystem.DirectoryList(0))
+                For Each Wallet As String In Directory.EnumerateFiles(GlobalData.DirectoryList(0))
                     InputListBox.Items.Add(Path.GetFileName(Wallet))
                 Next
             Catch ex As Exception
@@ -165,7 +166,10 @@ Module GradientHelper
     Color.FromArgb(44, 62, 80),   ' #2c3e50
     Color.FromArgb(52, 152, 219)   ' #3498db
 }
-
+    Public SendingScreenColours As Color() = {
+    Color.FromArgb(0, 90, 167),    ' #005AA7
+    Color.FromArgb(255, 253, 228)   ' #FFFDE4
+}
 
 
     ' Helper method to set a control's background color with a diagonal gradient

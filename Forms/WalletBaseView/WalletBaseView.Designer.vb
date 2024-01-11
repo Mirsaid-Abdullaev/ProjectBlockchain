@@ -171,6 +171,7 @@ Partial Class WalletBaseView
         Me.Controls.Add(Me.CreateWallet)
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D
         Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
+        Me.MaximizeBox = False
         Me.Name = "WalletBaseView"
         Me.Text = "WALLET MANAGEMENT"
         CType(Me.PictureBox1, System.ComponentModel.ISupportInitialize).EndInit()

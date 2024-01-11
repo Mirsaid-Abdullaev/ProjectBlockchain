@@ -1,0 +1,55 @@
+﻿JSON Requests:
+
+Base Request class:
+{
+  "AppIdMsg": "WAYFARER_V1"
+  "MessageType": "NULL - BASE CLASS",
+  "DeviceName": "Device1",
+  "DeviceIP": "192.168.1.211"
+}
+
+Connection Request - ONLY BROADCASTING request, others happen using tcp
+{
+  "MessageType": "ConnectionRequest",
+  "NodeType": "LEAF"
+}
+
+GetBlockchainData Request
+{
+  "MessageType": "GetBlockchainData",
+  "StartBlock": "BlockNumber"
+}
+GetTransactionPool Request
+{
+  "MessageType": "GetTransactionPool"
+}
+NewTransaction Request
+{
+  "MessageType": "NewTransaction",
+  "Timestamp": "12128389292" 'unix timestamp
+  "Sender": "A292935854CDFFE2B" 'etc. hex pubaddr of sender
+  "Recipient": "1048443ECA1193CB" 'hex pubaddr of recipient
+  "Quantity": "24.22" 'value of type Single to be sent from sender to recipient
+}
+NewMinedBlock Request
+{
+  "MessageType": "NewBlockMined",
+  "Index": "X",
+  "Hash": "fnrufeiwwee",
+  "PrevHash": "dwnu3jdeidwiw",
+  "Nonce": "10021",
+  "Time": "12934843920"
+  "Transactions": "[transact1], [transact2] etc"
+}
+
+
+
+
+JSON Responses:
+Connection Response
+{
+  "MessageType": "ConnectionResponse",
+  "Status": "Accepted",
+  "AdditionalInfo": "Connection established successfully. You are now leaf node."
+}
+What needs to happen: Device1 needs to update itself to BRANCH nodetype and stop broadcasts,

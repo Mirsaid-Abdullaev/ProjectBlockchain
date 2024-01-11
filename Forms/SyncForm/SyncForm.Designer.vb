@@ -130,6 +130,7 @@ Partial Class SyncForm
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D
         Me.HelpButton = True
         Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
+        Me.MaximizeBox = False
         Me.Name = "SyncForm"
         Me.Text = "SYNCHRONISATION"
         CType(Me.PictureBox1, System.ComponentModel.ISupportInitialize).EndInit()

@@ -9,8 +9,8 @@ Public Class WalletBaseView
 
     Private Sub CreateWallet_Click(sender As Object, e As EventArgs) Handles CreateWallet.Click
         Dim WalletName As String = ""
-        While WalletName = ""
-            Dim TempResult As Object = CustomInputBox.ShowInputBox("Enter a wallet name as a string. Note: this CANNOT be changed once wallet is created!", "GENERATE NEW WALLET")
+        While Not IsValidStr(WalletName)
+            Dim TempResult As Object = CustomInputBox.ShowInputBox("Enter a valid wallet name as a string - alphanumerics only. Note: this CANNOT be changed once wallet is created!", "GENERATE NEW WALLET")
             WalletName = TempResult(0)
             If Not TempResult(1) Then
                 CustomMsgBox.ShowBox("Cancelled creation of a wallet. Thank you.", "STATUS", False)
@@ -22,6 +22,8 @@ Public Class WalletBaseView
     End Sub
 
     Private Sub Disconnect_Click(sender As Object, e As EventArgs) Handles Disconnect.Click
+        GlobalData.AppRunning = False
+        'SendDisconnectedJSONToPrevPtr - add when configured
         Application.Exit() 'implement the planned disconnect procedure here and transfer to all these instances
     End Sub
 
@@ -43,13 +45,14 @@ Public Class WalletBaseView
             TempResult = CustomInputBox.ShowInputBox($"Enter private key to wallet ""{SelectedWallet}"" or click Cancel to exit.", "WALLET LOGIN")
             If TempResult(1) = False Then
                 Exit Sub
+            ElseIf Not IsValidStr(TempResult(0)) Then
+                Continue For
             End If
             Dim TempPrivKey As String = TempResult(0)
             Dim ComputedHash As String = GeneratePublicKey(TempPrivKey)
-            Using SR As New StreamReader(FileSystem.DirectoryList(0) & SelectedWallet)
+            Using SR As New StreamReader(GlobalData.DirectoryList(0) & SelectedWallet)
                 Balance = CSng(SR.ReadLine())
-                Dim PubAddr As String = SR.ReadLine()
-                ActualHash = PubAddr
+                ActualHash = SR.ReadLine()
             End Using
             If Not String.Equals(ActualHash, ComputedHash) AndAlso I < 3 Then
                 If Not CustomMsgBox.ShowBox($"Incorrect private key. Please try again. {3 - I} more tries left.", "WARNING") Then
@@ -63,7 +66,7 @@ Public Class WalletBaseView
                 Exit For
             End If
         Next
-        GlobalData.CurrentWallet = New Wallet(WalName, ActualHash, FileSystem.DirectoryList(0) & SelectedWallet, Balance)
+        GlobalData.CurrentWallet = New Wallet(WalName, ActualHash, GlobalData.DirectoryList(0) & SelectedWallet, Balance)
         CustomMsgBox.ShowBox("Wallet login successful." & vbCrLf & $"Name: {GlobalData.CurrentWallet.WalletName}" & vbCrLf & $"Balance: {GlobalData.CurrentWallet.WalletBalance}" & vbCrLf & $"Address: {GlobalData.CurrentWallet.PublicAddress}", "STATUS", False)
         Me.StatusLbl.Text = SetSharedLblText(If(AppGlobals.GlobalData.Online, "Online", "Offline"), GlobalData.CurrentWallet.WalletName, GlobalData.CurrentWallet.WalletBalance.ToString) '"CURRENT WALLET: " & GlobalData.CurrentWallet.WalletName & vbCrLf & "BALANCE: " & GlobalData.CurrentWallet.WalletBalance.ToString
         GlobalData.StatusLblText = Me.StatusLbl.Text
@@ -86,16 +89,18 @@ Public Class WalletBaseView
             CustomMsgBox.ShowBox("Delete failed. Try again later.", "ERROR", False)
             Exit Sub
         End If
-        Dim WalletPath As String = FileSystem.DirectoryList(0) & SelectedWallet
+        Dim WalletPath As String = GlobalData.DirectoryList(0) & SelectedWallet
 
         Dim ActualHash As String = ""
         TempResult = CustomInputBox.ShowInputBox($"Enter private key to wallet {SelectedWallet} or click Cancel to exit.", "WALLET LOGIN")
         If TempResult(1) = False Then
             Exit Sub
+        ElseIf Not IsValidStr(TempResult(0)) Then
+            TempResult(0) = ""
         End If
         Dim TempPrivKey As String = TempResult(0)
         Dim ComputedHash As String = GeneratePublicKey(TempPrivKey)
-        Using SR As New StreamReader(FileSystem.DirectoryList(0) & SelectedWallet)
+        Using SR As New StreamReader(GlobalData.DirectoryList(0) & SelectedWallet)
             SR.ReadLine()
             Dim PubAddr As String = SR.ReadLine() 'Public Address/Hash
             ActualHash = PubAddr

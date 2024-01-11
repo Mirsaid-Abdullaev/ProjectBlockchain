@@ -8,7 +8,7 @@ Public Class SyncForm
         For i As Integer = 1 To 100
             ProgressBar1.Value += 1
         Next 'in reality, sync procedure will happen here, this is a placeholder
-
+        FileSystem.Initialise()
         Me.Close()
     End Sub
 End Class

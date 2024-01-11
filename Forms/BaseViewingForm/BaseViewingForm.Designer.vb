@@ -158,6 +158,7 @@ Partial Class BaseViewingForm
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D
         Me.HelpButton = True
         Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon)
+        Me.MaximizeBox = False
         Me.Name = "BaseViewingForm"
         Me.Text = "BLOCKCHAIN VIEWER"
         CType(Me.PictureBox1, System.ComponentModel.ISupportInitialize).EndInit()

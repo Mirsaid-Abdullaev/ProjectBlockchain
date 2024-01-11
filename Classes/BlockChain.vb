@@ -1,5 +1,7 @@
-﻿Public Class BlockChain
-    Const GenesisData As String = "GenesisBlock*GenesisBlock*0*0*GenesisBlock*"
+﻿Imports System.Reflection
+Imports System.Security.Policy
+Public Class BlockChain
+    Private ReadOnly GenesisData As String = String.Join(vbLf, {"Block: 0", "Previous hash: GenesisBlock", "Nonce: 0", "Timestamp: GenesisBlock", "Transactions: "})
     Public Sub AddBlock(ByVal NewBlock As Block)
         NewBlock.MineBlock(Difficulty)
         Chain.Add(NewBlock)
@@ -17,13 +19,13 @@
     End Function
 
     Public Function IsValidChain() As Boolean
-        If Chain.First.BlockData <> GenesisData Then
+        If Chain.First.GetBlockDataForMining() <> GenesisData Then
             Return False
         Else
             For I As Integer = 1 To Chain.Count
-                Dim TempBlock As Block = Chain.Item(I)
+                Dim CurrentBlock As Block = Chain.Item(I)
                 Dim LastBlock As Block = Chain.Item(I - 1)
-                If TempBlock.PrevHash <> LastBlock.Hash Or TempBlock.Hash <> GetSHA256HashFromString(TempBlock.BlockData) Then
+                If CurrentBlock.GetPrevHash <> LastBlock.GetHash() Or CurrentBlock.GetHash <> GetSHA256HashFromString(CurrentBlock.GetBlockDataForMining) Then
                     Return False
                 End If
             Next
@@ -33,11 +35,10 @@
 
     Public Sub ReplaceNewChain(NewChain As BlockChain)
         If NewChain.Chain.Count < Chain.Count Then
-            MsgBox("Chain received is shorter than current chain!")
+            CustomMsgBox.ShowBox("Chain received is shorter than current chain!", "ERROR", False)
         ElseIf Not newchain.IsValidChain() Then
-            MsgBox("Chain received is not valid!")
+            CustomMsgBox.ShowBox("Chain received is not valid!", "ERROR", False)
         Else
-            MsgBox("Replacing chain with new chain: ")
             Chain = NewChain.Chain
         End If
     End Sub
@@ -45,7 +46,7 @@
     Public Sub New()
         'make a genesis block
         Dim GenesisBlock As New Block("Genesis")
-        GenesisBlock.GetBlockDataAsString()
+        GenesisBlock.GetBlockDataForMining()
         Chain = New List(Of Block)
         AddBlock(GenesisBlock)
     End Sub
