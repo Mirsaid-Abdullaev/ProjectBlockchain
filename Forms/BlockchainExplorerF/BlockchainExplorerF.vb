@@ -9,7 +9,7 @@ Public Class BlockchainExplorerF
     End Sub
 
     Private Sub Disconnect_Click(sender As Object, e As EventArgs) Handles Disconnect.Click
-        GlobalData.AppRunning = False
+        AppRunning = False
         'SendDisconnectedJSONToPrevPtr - add when configured
         Application.Exit()
     End Sub
@@ -17,7 +17,7 @@ Public Class BlockchainExplorerF
     Private Sub BlockchainExplorer_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         DesignLoad(Me, BlockchainExpColours)
         CheckForIllegalCrossThreadCalls = False
-        Me.StatusLbl.Text = GlobalData.StatusLblText
+        Me.StatusLbl.Text = StatusLblText
         UpdateBlockchain = New Thread(AddressOf UpdateBlockchainTxt)
         UpdateBlockchain.Start()
         GC.Collect()
@@ -26,7 +26,7 @@ Public Class BlockchainExplorerF
     Private Sub UpdateBlockchainTxt()
         While Not FormExiting
             'BlockchainTxt.Clear()
-            'For Each B As Block In GlobalData.Blockchain.Blockchain
+            'For Each B As Block In Blockchain.Blockchain
             '    BlockchainTxt.Text &= B.GetBlockData & vbCrLf
             'Next
             'Thread.Sleep(5000)

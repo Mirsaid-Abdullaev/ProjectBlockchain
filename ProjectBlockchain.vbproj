@@ -113,10 +113,10 @@
   <ItemGroup>
     <Compile Include="Classes\Block.vb" />
     <Compile Include="Classes\BlockChain.vb" />
+    <Compile Include="Classes\ConnectionHandler.vb" />
     <Compile Include="Classes\DataBufferQueue.vb" />
-    <Compile Include="Classes\Device.vb" />
-    <Compile Include="Classes\SHA256.vb" />
-    <Compile Include="Classes\Time.vb" />
+    <Compile Include="Classes\RootHandler.vb" />
+    <Compile Include="Classes\TCPHandler.vb" />
     <Compile Include="Classes\Transaction.vb" />
     <Compile Include="Classes\TransactionPool.vb" />
     <Compile Include="Classes\Wallet.vb" />
@@ -162,10 +162,10 @@
     <Compile Include="Forms\SendingScreen\SendingScreen.vb">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\TestingScreen\TestForm.Designer.vb">
+    <Compile Include="Forms\TestForm\TestForm.Designer.vb">
       <DependentUpon>TestForm.vb</DependentUpon>
     </Compile>
-    <Compile Include="Forms\TestingScreen\TestForm.vb">
+    <Compile Include="Forms\TestForm\TestForm.vb">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Forms\TransactPoolView\TransactPoolView.Designer.vb">
@@ -197,8 +197,8 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
     <Compile Include="Namespaces\Design.vb" />
-    <Compile Include="Namespaces\FileSystem.vb" />
-    <Compile Include="Namespaces\Globals.vb" />
+    <Compile Include="Namespaces\Synchronisation.vb" />
+    <Compile Include="Namespaces\AppGlobals.vb" />
     <Compile Include="Namespaces\Network.vb" />
     <Compile Include="Namespaces\Startup.vb" />
     <Compile Include="obj\Debug\.NETFramework,Version=v4.7.2.AssemblyAttributes.vb" />
@@ -225,7 +225,7 @@
     <EmbeddedResource Include="Forms\SendingScreen\SendingScreen.resx">
       <DependentUpon>SendingScreen.vb</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Forms\TestingScreen\TestForm.resx">
+    <EmbeddedResource Include="Forms\TestForm\TestForm.resx">
       <DependentUpon>TestForm.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\TransactPoolView\TransactPoolView.resx">
@@ -266,8 +266,33 @@
     <None Include="obj\Debug\ProjectBlockchain.vbproj.GenerateResource.cache" />
     <None Include="obj\Debug\WindowsApp1.vbproj.AssemblyReference.cache" />
     <None Include="packages.config" />
+    <None Include="packages\Newtonsoft.Json.13.0.3\.signature.p7s" />
+    <None Include="packages\Newtonsoft.Json.13.0.3\LICENSE.md" />
+    <None Include="packages\Newtonsoft.Json.13.0.3\Newtonsoft.Json.13.0.3.nupkg" />
+    <None Include="packages\Newtonsoft.Json.13.0.3\README.md" />
+    <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include=".gitattributes" />
+    <Content Include=".gitignore" />
+    <Content Include="Full Code.txt" />
+    <Content Include="packages\Newtonsoft.Json.13.0.3\lib\net20\Newtonsoft.Json.dll" />
+    <Content Include="packages\Newtonsoft.Json.13.0.3\lib\net20\Newtonsoft.Json.xml" />
+    <Content Include="packages\Newtonsoft.Json.13.0.3\lib\net35\Newtonsoft.Json.dll" />
+    <Content Include="packages\Newtonsoft.Json.13.0.3\lib\net35\Newtonsoft.Json.xml" />
+    <Content Include="packages\Newtonsoft.Json.13.0.3\lib\net40\Newtonsoft.Json.dll" />
+    <Content Include="packages\Newtonsoft.Json.13.0.3\lib\net40\Newtonsoft.Json.xml" />
+    <Content Include="packages\Newtonsoft.Json.13.0.3\lib\net45\Newtonsoft.Json.dll" />
+    <Content Include="packages\Newtonsoft.Json.13.0.3\lib\net45\Newtonsoft.Json.xml" />
+    <Content Include="packages\Newtonsoft.Json.13.0.3\lib\net6.0\Newtonsoft.Json.dll" />
+    <Content Include="packages\Newtonsoft.Json.13.0.3\lib\net6.0\Newtonsoft.Json.xml" />
+    <Content Include="packages\Newtonsoft.Json.13.0.3\lib\netstandard1.0\Newtonsoft.Json.dll" />
+    <Content Include="packages\Newtonsoft.Json.13.0.3\lib\netstandard1.0\Newtonsoft.Json.xml" />
+    <Content Include="packages\Newtonsoft.Json.13.0.3\lib\netstandard1.3\Newtonsoft.Json.dll" />
+    <Content Include="packages\Newtonsoft.Json.13.0.3\lib\netstandard1.3\Newtonsoft.Json.xml" />
+    <Content Include="packages\Newtonsoft.Json.13.0.3\lib\netstandard2.0\Newtonsoft.Json.dll" />
+    <Content Include="packages\Newtonsoft.Json.13.0.3\lib\netstandard2.0\Newtonsoft.Json.xml" />
+    <Content Include="packages\Newtonsoft.Json.13.0.3\packageIcon.png" />
     <Content Include="Requests-Responses.txt" />
     <None Include="My Project\AppIcon.ico" />
     <Content Include="My Project\Logo.png" />

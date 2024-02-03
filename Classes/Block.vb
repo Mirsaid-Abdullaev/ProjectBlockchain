@@ -18,11 +18,9 @@ Public Class Block
 
 
     Private Property Transactions As List(Of Transaction) 'store of transactions in current block
-    Public ReadOnly Property TransactionList As List(Of Transaction)
-        Get
-            Return Transactions
-        End Get
-    End Property
+    Public Function GetTransactionList() As List(Of Transaction)
+        Return Transactions
+    End Function
 
 
 
@@ -42,7 +40,7 @@ Public Class Block
 
 
 
-    Private Property Timestamp As String 'timestamp of block's mining
+    Private Property Timestamp As String = Nothing 'timestamp of block's mining
     Public Function GetTimestamp() As String
         Return Timestamp
     End Function
@@ -55,32 +53,32 @@ Public Class Block
 
     Public Sub MineBlock(ByVal Difficulty As Byte)
         Dim DataToHash As String = GetBlockDataForMining()
-        If Not PrevHash = StrDup(64, "0") Then
+        If Timestamp = Nothing Then
             Timestamp = TimeToUnixMs(Date.Now)
         End If
-        Hash = GetSHA256HashFromString(DataToHash)
+        Hash = GetSHA256FromString(DataToHash)
 
         'here, the hashing is delegated to a separate thread to keep UI from freezing/crashing
 
-        Dim TempMiningThread As New Thread(Sub() HashingUntilDifficulty(Difficulty)) With {.IsBackground = True}
-        GlobalData.IsMining = True
+        Dim TempMiningThread As New Thread(Sub() HashUntilDifficulty(Difficulty)) With {.IsBackground = True}
+        IsMining = True
         TempMiningThread.Start()
+        'CustomMsgBox.ShowBox("Block mined. Hash: " + Hash.ToString + ", " + "Nonce: " + Nonce.ToString, "BLOCK MINED", False)
     End Sub
 
 
 
-    Private Sub HashingUntilDifficulty(ByVal Difficulty As Byte)
+    Private Sub HashUntilDifficulty(ByVal Difficulty As Byte)
         Dim DifficultyString As String = StrDup(Difficulty, "0")
         While Mid(Hash, 1, Difficulty) <> DifficultyString
             Nonce += 1
             Dim DataToHash As String = GetBlockDataForMining()
-            Hash = GetSHA256HashFromString(DataToHash)
+            Hash = GetSHA256FromString(DataToHash)
         End While
-        ProjectBlockchain.AppGlobals.GlobalData.IsMining = False
-        CustomMsgBox.ShowBox("Block mined. Hash: " + Hash.ToString + ", " + "Nonce: " + Nonce.ToString, "BLOCK MINED", False)
+        IsMining = False
     End Sub
 
-    Public Sub AddBlockTransaction(ByVal NewTransaction As Transaction)
+    Public Sub AddTransaction(ByVal NewTransaction As Transaction)
         Transactions.Add(NewTransaction)
     End Sub
 
@@ -98,27 +96,14 @@ Public Class Block
 
 
 
-    Public Sub New(ByVal CurrentChainIndex As UInteger, ByVal CurrHash As String) 'for programmatic declaration of new blocks AFTER sync process
-        Index = CurrentChainIndex + 1
+    Public Sub New() 'for programmatic declaration of new blocks AFTER sync process
+        Index = WFBlockchain.GetLastBlock.GetIndex + 1
         Nonce = 0
         Transactions = New List(Of Transaction)
-        PrevHash = CurrHash
+        PrevHash = WFBlockchain.GetLastBlock.GetHash
     End Sub
 
-
-    Public Sub New(ByVal BlockType As String) 'only to be used for the genesis block
-        If BlockType = "Genesis" Then
-            Index = 0
-            Nonce = 0
-            Transactions = Nothing
-            PrevHash = StrDup(64, "0")
-            Timestamp = StrDup(64, "0")
-        Else
-            CustomMsgBox.ShowBox("Used wrong constructor - constructor reserved for genesis block.", "ERROR", False)
-        End If
-    End Sub
-
-    Public Sub New(Hash As String, PrevHash As String, Index As UInteger, Nonce As UInteger, Timestamp As String, Transactions As List(Of Transaction))
+    Public Sub New(Hash As String, PrevHash As String, Index As UInteger, Nonce As UInteger, Timestamp As String, Transactions As List(Of Transaction)) 'only for loading ready blocks in
         Me.Hash = Hash
         Me.PrevHash = PrevHash
         Me.Nonce = Nonce
@@ -137,7 +122,7 @@ Module BlockOperations
                 RawData = sr.ReadToEnd
             End Using
         Else
-            CustomMsgBox.ShowBox($"Error - no block file specified at path: {FilePath}", "ERROR", False)
+            CustomMsgBox.ShowBox($"Error - no block file specified at path: ""{FilePath}""", "ERROR", False)
             Return Nothing
         End If
         Dim BlockComps() As String = RawData.Split(vbLf)
@@ -189,27 +174,37 @@ Module BlockOperations
                         GoTo ErrorCondition
                     End If
                     BlockComps(i) = BlockComps(i).Substring(11)
+                    If BlockComps(i).Length < 10 Then
+                        GoTo ErrorCondition
+                    End If
                 Case Else
-ErrorCondition:     CustomMsgBox.ShowBox($"Block file ""{FilePath}"" seems to be corrupted. It will be deleted and any blocks after it will be too.", "ERROR", False)
+                    GoTo ErrorCondition
             End Select
         Next
         ParsedBlock = New Block(BlockComps(4), BlockComps(1), BlockComps(0), BlockComps(2), BlockComps(5), GetTransactionListFromString(BlockComps(3)))
-        Return ParsedBlock
-    End Function
-    Public Sub CreateFileFromBlock(ByRef Block As Block)
-        Dim FilePath As String = GlobalData.DirectoryList(1) & "Block" & Block.GetIndex.ToString & GlobalData.ExtensionList(1)
-        If File.Exists(FilePath) Then
-            CustomMsgBox.ShowBox("Block file already exists, or there is an error with an existing file. Not created the block file.", "ERROR", False)
-            Exit Sub
+        If IsValidBlock(ParsedBlock) Then
+            Return ParsedBlock
+        Else
+            GoTo ErrorCondition
         End If
-        Using sw As New StreamWriter(FilePath)
+ErrorCondition: CustomMsgBox.ShowBox($"Block file ""{FilePath}"" seems to be corrupted. It will be deleted and any blocks after it will be too.", "ERROR", False)
+        'delete current file and after it - use a "Nothing" checker to determine during LocalSync to delete all  block files by using a loop counter
+        Return Nothing
+    End Function
+    Public Sub CreateFileFromBlock(Block As Block)
+        Dim FilePath As String = DirectoryList(1) & "Block" & Block.GetIndex.ToString & ExtensionList(1)
+        If File.Exists(FilePath) AndAlso GetBlockFromFile(FilePath).GetFullData = Block.GetFullData Then
+            Exit Sub 'checks if the block to be saved exists, and if it exactly the same as the block to be saved - overwritten if not the same, otherwise exited
+        End If
+        Using sw As New StreamWriter(FilePath, False)
             sw.WriteLine($"Block: {Block.GetIndex()}")
             sw.WriteLine($"Previous hash: {Block.GetPrevHash()}")
             sw.WriteLine($"Nonce: {Block.GetNonce}")
-            sw.WriteLine("Transactions: " & GetTransactionListAsString(Block.TransactionList))
+            sw.WriteLine("Transactions: " & GetTransactionListAsString(Block.GetTransactionList))
             sw.WriteLine($"Hash: {Block.GetHash()}")
             sw.WriteLine($"Timestamp: {Block.GetTimestamp()}")
         End Using
+        'File.SetAttributes(FilePath, File.GetAttributes(FilePath) Or FileAttributes.ReadOnly)
     End Sub
 
     Public Function IsValidBlockFilePath(FilePath As String) As Boolean 'for localsync proc
@@ -218,6 +213,6 @@ ErrorCondition:     CustomMsgBox.ShowBox($"Block file ""{FilePath}"" seems to be
     End Function
 
     Public Function IsValidBlock(Block As Block) As Boolean
-        Return GetSHA256HashFromString(Block.GetBlockDataForMining) = Block.GetHash
+        Return GetSHA256FromString(Block.GetBlockDataForMining) = Block.GetHash
     End Function
 End Module

@@ -1,6 +1,6 @@
 ﻿Public Class SendingScreen
     Private Sub Disconnect_Click(sender As Object, e As EventArgs) Handles Disconnect.Click
-        GlobalData.AppRunning = False
+        AppRunning = False
         'SendDisconnectedJSONToPrevPtr - add when configured
         Application.Exit()
     End Sub
@@ -13,7 +13,7 @@
 
     Private Sub SendingScreen_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         DesignLoad(Me, SendingScreenColours)
-        Me.StatusLbl.Text = GlobalData.StatusLblText
+        Me.StatusLbl.Text = StatusLblText
     End Sub
 
     Private Sub CheckConfirm_Click(sender As Object, e As EventArgs) Handles CheckConfirm.Click

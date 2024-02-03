@@ -1,9 +1,7 @@
 ﻿Imports System.Security.Cryptography
 Imports System.IO
 Imports System.Text
-
-
-Module Wallets
+Module WalletOperations
     Function GeneratePrivateKey() As String
         Dim RndBytes(31) As Byte
         Using SafeRNG As New RNGCryptoServiceProvider()
@@ -13,10 +11,10 @@ Module Wallets
         Return PrivateKey
     End Function
 
-    'absolute hashfest here - one way function from the private key.
+    'absolute hashfest - one way function from the private key.
     Function GeneratePublicKey(StrPrivKey As String) As String
         Dim TempStr As String = StrPrivKey
-        TempStr = TempStr & "Wayfarer_V1" & Network.GetDeviceName() 'an appID + devicename salt is added to the privatekey as well for validating the file
+        TempStr = TempStr & "WAYFARER_V1" & GetDeviceName() 'an appID + devicename salt is added to the privatekey as well for validating the file
         'first, two rounds of SHA256 are performed
         Using sha256 As SHA256 = SHA256.Create()
             For i As Byte = 1 To 2
@@ -43,45 +41,64 @@ Module Wallets
         End Using
         Return TempStr
     End Function
+
+    Public Function ScanBlockBalanceUpdate(PublicAddress As String) As Double
+        'go through every block loaded to find balance
+        Dim Balance As Double = 0
+        For Each Item As Block In WFBlockchain.GetChain
+            If Item.GetTransactionList Is Nothing Then
+                Continue For
+            End If 'skips any blocks that have no transactions
+            For Each Transact As Transaction In Item.GetTransactionList
+                'perform a search through all the transactions per block - should be OK time-complexity wise, as search will discard many transacts without processing, worst case O(n)
+                If Transact.Sender <> PublicAddress AndAlso Transact.Recipient <> PublicAddress Then
+                    Continue For
+                End If
+
+                If Transact.Sender = PublicAddress Then
+                    Balance -= Transact.Quantity
+                    Continue For
+                ElseIf Transact.Recipient = PublicAddress Then
+                    Balance += Transact.Quantity
+                End If
+            Next
+        Next
+        Return Balance
+    End Function
 End Module
 Public Class Wallet
-    Private ReadOnly Name As String
-    Private ReadOnly PubAddr As String
+    Private ReadOnly WalletName As String
+    Private ReadOnly PublicAddress As String
     Private ReadOnly FilePath As String
-    Private Balance As Single
+    Private Balance As Double
 
-    Public ReadOnly Property PublicAddress As String
-        Get
-            Return PubAddr
-        End Get
-    End Property
-    Public ReadOnly Property WalletName As String
-        Get
-            Return Name
-        End Get
-    End Property
-    Public ReadOnly Property WalletBalance As Single
-        Get
-            Return Balance
-        End Get
-    End Property
+    Public Function GetPublicAddress() As String
+        Return PublicAddress
+    End Function
+    Public Function GetWalletName() As String
+        Return WalletName
+    End Function
+    Public Function GetWalletBalance() As Double
+        Balance = ScanBlockBalanceUpdate(PublicAddress)
+        Return Balance
+    End Function
 
-    Public Sub New(WltName As String) 'for generating a new wallet
+    Public Sub New(WalletName As String) 'for generating a new wallet
         Try
-            Dim CurrCount As Byte = Directory.EnumerateFiles(GlobalData.DirectoryList(0)).Count
+            Dim CurrCount As Byte = Directory.EnumerateFiles(DirectoryList(0)).Count
             If CurrCount >= 5 Then
                 CustomMsgBox.ShowBox("User reached limit of wallets. Either log into an existing wallet, or delete an existing wallet.", "ERROR", False)
                 Exit Sub
             End If
         Catch ex As Exception
             CustomMsgBox.ShowBox("Directory does not exist. Created new \Wallets folder.", "ERROR HANDLED", False)
-            If Not Directory.Exists(GlobalData.DirectoryList(0)) Then
-                Directory.CreateDirectory(GlobalData.DirectoryList(0))
+            If Not Directory.Exists(DirectoryList(0)) Then
+                Directory.CreateDirectory(DirectoryList(0))
             End If
         End Try
-        Me.Name = WltName
+        Me.WalletName = WalletName
         Me.Balance = 0
-        Me.FilePath = GlobalData.DirectoryList(0) & WltName & GlobalData.ExtensionList(0) '0 is the wallet extension and folder path
+        Me.FilePath = DirectoryList(0) & WalletName & ExtensionList(0) '0 is the wallet extension and folder path
         If File.Exists(FilePath) Then
             CustomMsgBox.ShowBox("Wallet exists. Wallet creation failed.", "ERROR", False)
             Exit Sub
@@ -93,13 +110,13 @@ Public Class Wallet
                 Exit Try
             End If
             Dim PrivKey As String = GeneratePrivateKey()
-            Me.PubAddr = GeneratePublicKey(PrivKey)
+            Me.PublicAddress = GeneratePublicKey(PrivKey)
             CustomMsgBox.ShowBox(PrivKey, "PRIVATE KEY", False)
 
             Using fs As FileStream = File.Create(Me.FilePath)
                 Using sw As New StreamWriter(fs)
-                    sw.WriteLine(Me.WalletBalance)
-                    sw.WriteLine(Me.PubAddr)
+                    'balance is not needed in the file anymore - scanblock procedure will get the balance at startup
+                    sw.WriteLine(Me.PublicAddress)
                 End Using
             End Using
         Catch ex As Exception
@@ -110,14 +127,14 @@ Public Class Wallet
         End Try
     End Sub
 
-    Public Sub New(WltName As String, PubAddress As String, FilePath As String, Balance As Single) 'for loading an existing wallet
-        Name = WltName
-        PubAddr = PubAddress
+    Public Sub New(WalletName As String, PublicAddress As String, FilePath As String) 'for loading an existing wallet
+        Me.WalletName = WalletName
+        Me.PublicAddress = PublicAddress
         Me.FilePath = FilePath
-        Me.Balance = Balance
+        Me.Balance = ScanBlockBalanceUpdate(Me.PublicAddress)
     End Sub
 
-    Public Sub ChangeBalance(Value As Single)
+    Public Sub ChangeBalance(Value As Double)
         Me.Balance += Value
     End Sub
 End Class

@@ -6,13 +6,13 @@
     End Sub
 
     Private Sub Disconnect_Click(sender As Object, e As EventArgs) Handles Disconnect.Click
-        GlobalData.AppRunning = False
+        AppRunning = False
         'SendDisconnectedJSONToPrevPtr - add when configured
         Application.Exit()
     End Sub
 
     Private Sub NetStatusView_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         DesignLoad(Me, BlockchainExpColours)
-        Me.StatusLbl.Text = GlobalData.StatusLblText
+        Me.StatusLbl.Text = StatusLblText
     End Sub
 End Class

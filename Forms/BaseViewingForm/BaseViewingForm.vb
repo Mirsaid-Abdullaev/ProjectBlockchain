@@ -6,7 +6,7 @@
     End Sub
 
     Private Sub Disconnect_Click(sender As Object, e As EventArgs) Handles Disconnect.Click
-        GlobalData.AppRunning = False
+        AppRunning = False
         'SendDisconnectedJSONToPrevPtr - add when configured
         Application.Exit()
     End Sub
@@ -14,7 +14,7 @@
     Private Sub BlockchainExpF_Click(sender As Object, e As EventArgs) Handles BlockchainExpF.Click
         Me.Hide()
         BlockchainExplorerF.ShowDialog()
-        Me.StatusLbl.Text = GlobalData.StatusLblText
+        Me.StatusLbl.Text = StatusLblText
         Try
             Me.Show()
         Catch ex As Exception
@@ -24,14 +24,14 @@
 
     Private Sub BaseViewingForm_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         DesignLoad(Me, BlockchainExpColours)
-        Me.StatusLbl.Text = GlobalData.StatusLblText
+        Me.StatusLbl.Text = StatusLblText
         GC.Collect()
     End Sub
 
     Private Sub BlockchainExpH_Click(sender As Object, e As EventArgs) Handles BlockchainExpH.Click
         Me.Hide()
         BlockchainExplorerH.ShowDialog()
-        Me.StatusLbl.Text = GlobalData.StatusLblText
+        Me.StatusLbl.Text = StatusLblText
         Try
             Me.Show()
         Catch ex As Exception
@@ -42,7 +42,7 @@
     Private Sub NetworkStatusView_Click(sender As Object, e As EventArgs) Handles NetworkStatusView.Click
         Me.Hide()
         NetStatusView.ShowDialog()
-        Me.StatusLbl.Text = GlobalData.StatusLblText
+        Me.StatusLbl.Text = StatusLblText
         Try
             Me.Show()
         Catch ex As Exception

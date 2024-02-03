@@ -1,16 +1,26 @@
 ﻿Public Class TransactionPool
+    Public Sub New()
+        TransactionList = New List(Of Transaction)
+    End Sub
 
     Private Property TransactionList As List(Of Transaction)
-    Public Function GetTransactions() As String
+    Public Function GetTransactionListAsString() As String
         Try
-            Return String.Join(",", TransactionList)
+            Dim TransactionString As String() = GetTransactionListAsArray(TransactionList)
+
+            Return String.Join(vbCrLf, TransactionString)
+
         Catch ex As Exception
             Return "" 'empty pool
         End Try
     End Function
 
-    Friend Function GetContents() As String
-        Return ""
-        'when implemented, should return a string of transactions in the current transactionpool
+    Public Sub AddTransaction(Transact As Transaction)
+        TransactionList.Add(Transact)
+    End Sub
+    Public Function FlushPool() As List(Of Transaction)
+        Dim TempList As List(Of Transaction) = TransactionList
+        TransactionList = New List(Of Transaction)
+        Return TempList
     End Function
 End Class

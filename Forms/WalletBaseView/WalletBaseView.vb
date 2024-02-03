@@ -3,7 +3,7 @@ Public Class WalletBaseView
 
     Private Sub WalletBaseView_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         DesignLoad(Me, WalletColours)
-        Me.StatusLbl.Text = GlobalData.StatusLblText
+        Me.StatusLbl.Text = StatusLblText
         GC.Collect()
     End Sub
 
@@ -22,7 +22,7 @@ Public Class WalletBaseView
     End Sub
 
     Private Sub Disconnect_Click(sender As Object, e As EventArgs) Handles Disconnect.Click
-        GlobalData.AppRunning = False
+        AppRunning = False
         'SendDisconnectedJSONToPrevPtr - add when configured
         Application.Exit() 'implement the planned disconnect procedure here and transfer to all these instances
     End Sub
@@ -39,7 +39,6 @@ Public Class WalletBaseView
             CustomMsgBox.ShowBox("No wallet selected. Please generate a wallet, and then try again.", "ERROR", False)
             Exit Sub
         End If
-        Dim Balance As Single = 0
         Dim ActualHash As String = ""
         For I As Byte = 1 To 3
             TempResult = CustomInputBox.ShowInputBox($"Enter private key to wallet ""{SelectedWallet}"" or click Cancel to exit.", "WALLET LOGIN")
@@ -50,8 +49,7 @@ Public Class WalletBaseView
             End If
             Dim TempPrivKey As String = TempResult(0)
             Dim ComputedHash As String = GeneratePublicKey(TempPrivKey)
-            Using SR As New StreamReader(GlobalData.DirectoryList(0) & SelectedWallet)
-                Balance = CSng(SR.ReadLine())
+            Using SR As New StreamReader(DirectoryList(0) & SelectedWallet)
                 ActualHash = SR.ReadLine()
             End Using
             If Not String.Equals(ActualHash, ComputedHash) AndAlso I < 3 Then
@@ -66,10 +64,10 @@ Public Class WalletBaseView
                 Exit For
             End If
         Next
-        GlobalData.CurrentWallet = New Wallet(WalName, ActualHash, GlobalData.DirectoryList(0) & SelectedWallet, Balance)
-        CustomMsgBox.ShowBox("Wallet login successful." & vbCrLf & $"Name: {GlobalData.CurrentWallet.WalletName}" & vbCrLf & $"Balance: {GlobalData.CurrentWallet.WalletBalance}" & vbCrLf & $"Address: {GlobalData.CurrentWallet.PublicAddress}", "STATUS", False)
-        Me.StatusLbl.Text = SetSharedLblText(If(AppGlobals.GlobalData.Online, "Online", "Offline"), GlobalData.CurrentWallet.WalletName, GlobalData.CurrentWallet.WalletBalance.ToString) '"CURRENT WALLET: " & GlobalData.CurrentWallet.WalletName & vbCrLf & "BALANCE: " & GlobalData.CurrentWallet.WalletBalance.ToString
-        GlobalData.StatusLblText = Me.StatusLbl.Text
+        CurrentWallet = New Wallet(WalName, ActualHash, DirectoryList(0) & SelectedWallet)
+        CustomMsgBox.ShowBox("Wallet login successful." & vbCrLf & $"Name: {CurrentWallet.GetWalletName}" & vbCrLf & $"Balance: {CurrentWallet.GetWalletBalance}" & vbCrLf & $"Address: {CurrentWallet.GetPublicAddress}", "STATUS", False)
+        Me.StatusLbl.Text = SetSharedLblText(If(AppGlobals.IsSynchronised, "Online", "Offline"), CurrentWallet.GetWalletName, CurrentWallet.GetWalletBalance.ToString) '"CURRENT WALLET: " & CurrentWallet.WalletName & vbCrLf & "BALANCE: " & CurrentWallet.WalletBalance.ToString
+        StatusLblText = Me.StatusLbl.Text
         GC.Collect()
     End Sub
 
@@ -89,7 +87,7 @@ Public Class WalletBaseView
             CustomMsgBox.ShowBox("Delete failed. Try again later.", "ERROR", False)
             Exit Sub
         End If
-        Dim WalletPath As String = GlobalData.DirectoryList(0) & SelectedWallet
+        Dim WalletPath As String = DirectoryList(0) & SelectedWallet
 
         Dim ActualHash As String = ""
         TempResult = CustomInputBox.ShowInputBox($"Enter private key to wallet {SelectedWallet} or click Cancel to exit.", "WALLET LOGIN")
@@ -100,8 +98,7 @@ Public Class WalletBaseView
         End If
         Dim TempPrivKey As String = TempResult(0)
         Dim ComputedHash As String = GeneratePublicKey(TempPrivKey)
-        Using SR As New StreamReader(GlobalData.DirectoryList(0) & SelectedWallet)
-            SR.ReadLine()
+        Using SR As New StreamReader(DirectoryList(0) & SelectedWallet)
             Dim PubAddr As String = SR.ReadLine() 'Public Address/Hash
             ActualHash = PubAddr
         End Using
@@ -116,10 +113,10 @@ Public Class WalletBaseView
             CustomMsgBox.ShowBox($"Not able to delete wallet, or it does not exist. Error: {ex.Message}", "ERROR", False)
         End Try
 
-        If GlobalData.CurrentWallet IsNot Nothing AndAlso GlobalData.CurrentWallet.PublicAddress = ActualHash Then
-            GlobalData.CurrentWallet = Nothing
-            Me.StatusLbl.Text = SetSharedLblText(If(AppGlobals.GlobalData.Online, "Online", "Offline"), "Not logged into a wallet.", "Not logged into a wallet.")
-            GlobalData.StatusLblText = Me.StatusLbl.Text
+        If CurrentWallet IsNot Nothing AndAlso CurrentWallet.GetPublicAddress = ActualHash Then
+            CurrentWallet = Nothing
+            Me.StatusLbl.Text = SetSharedLblText(If(AppGlobals.IsSynchronised, "Online", "Offline"), "Not logged into a wallet.", "Not logged into a wallet.")
+            StatusLblText = Me.StatusLbl.Text
         End If
         GC.Collect()
     End Sub

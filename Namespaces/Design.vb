@@ -83,7 +83,7 @@ Module Design 'need to finish custommsgbox
             Me.Controls.Add(MessageHeadTxt)
             Me.Controls.Add(InputListBox)
             Try
-                For Each Wallet As String In Directory.EnumerateFiles(GlobalData.DirectoryList(0))
+                For Each Wallet As String In Directory.EnumerateFiles(DirectoryList(0))
                     InputListBox.Items.Add(Path.GetFileName(Wallet))
                 Next
             Catch ex As Exception

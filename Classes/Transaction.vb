@@ -2,16 +2,16 @@
     Public ReadOnly Property Timestamp As String 'timestamp of transaction
     Public ReadOnly Property Sender As String 'sender address
     Public ReadOnly Property Recipient As String 'recipient address
-    Public ReadOnly Property Quantity As Single 'quantity of transfer
+    Public ReadOnly Property Quantity As Double 'quantity of transfer
 
-    Public Sub New(Sender As String, Recipient As String, Quantity As Single) 'auto transaction
+    Public Sub New(Sender As String, Recipient As String, Quantity As Double) 'auto transaction
         Timestamp = TimeToUnixMs(Date.Now)
         Me.Sender = Sender
         Me.Recipient = Recipient
         Me.Quantity = Quantity
     End Sub
 
-    Public Sub New(Timestamp As String, Sender As String, Recipient As String, Quantity As Single)
+    Public Sub New(Timestamp As String, Sender As String, Recipient As String, Quantity As Double)
         Me.Timestamp = Timestamp
         Me.Sender = Sender
         Me.Recipient = Recipient
@@ -63,7 +63,7 @@ Module TransactionOperations
         Dim Timestamp As String = Components(0).Replace(" ", "")
         Dim Sender As String = Components(1).Replace(" ", "")
         Dim Recipient As String = Components(2).Replace(" ", "")
-        Dim Quantity As Single = Single.Parse(Components(3))
+        Dim Quantity As Double = Double.Parse(Components(3))
 
         ' Create and return the Transaction object
         Return New Transaction(Timestamp, Sender, Recipient, Quantity)
@@ -75,6 +75,19 @@ Module TransactionOperations
         Catch ex As Exception
             Return ""
         End Try
+    End Function
+
+    Public Function GetTransactionListAsArray(TransactList As List(Of Transaction)) As String()
+        If TransactList.Count = 0 Then
+            Return Nothing
+        End If
+        Dim TransactArray(TransactList.Count - 1) As String
+        Dim Counter As UInteger = 0
+        For Each item In TransactList
+            TransactArray(Counter) = item.ToString
+            Counter += 1
+        Next 'returns an array filled with string transacts
+        Return TransactArray
     End Function
 
 End Module

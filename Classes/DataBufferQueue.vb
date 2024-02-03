@@ -1,21 +1,21 @@
-﻿Public Class DataBufferQueue(Of Template)
+﻿Public Class DataBufferQueue(Of T)
     Private Property RearPointer As Integer = -1
     ' List(Of Tuple(Of Template, Integer)) to store both the element and its priority
-    Private Property Queue As List(Of Tuple(Of Template, Integer))
+    Private Property Queue As List(Of Tuple(Of T, Integer))
     Private Property MaxSize As Integer
     ' FrontPointer is not required - the first data item in the queue will always be in the 0th index
     Private Const FrontPointer As Integer = 0
     Public Property IsEmpty As Boolean
     Public Property IsFull As Boolean
 
-    Public Sub New(Optional MaxSize As Integer = 100)
+    Public Sub New(Optional MaxSize As Integer = 200)
         Me.MaxSize = MaxSize
         IsEmpty = True
         IsFull = False
-        Queue = New List(Of Tuple(Of Template, Integer))
+        Queue = New List(Of Tuple(Of T, Integer))
     End Sub
 
-    Public Sub RemoveElement()
+    Public Sub DeleteLastElement()
         If Queue.Count > 0 Then
             Select Case RearPointer
                 Case 0
@@ -31,15 +31,11 @@
         End If
     End Sub
 
-    Public Sub AddElement(Data As Template, Optional Priority As String = "")
-        If Priority.ToLower() = "high" Then
-            AddElementWithPriority(Data, 0) ' High priority
-        Else
-            AddElementWithPriority(Data, 1) ' Low priority (default)
-        End If
+    Public Sub Enqueue(Data As T, Optional Priority As String = "")
+        EnqueueWithPriority(Data, If(Priority.ToLower() = "high", 0, 1)) '0 is high priority, 1 is everything else, checks for priority string high, else default priority
     End Sub
 
-    Private Sub AddElementWithPriority(Data As Template, Priority As Integer)
+    Private Sub EnqueueWithPriority(Data As T, Priority As Integer)
         If RearPointer < MaxSize - 1 Then
             RearPointer += 1
             ' Add the element and its priority to the queue
@@ -54,10 +50,10 @@
         IsEmpty = False
     End Sub
 
-    Public Function Pop() As Template
+    Public Function Dequeue() As T
         If Queue.Count > 0 Then
             ' Retrieve the element with the highest priority
-            Dim Data As Template = Queue(FrontPointer).Item1
+            Dim Data As T = Queue(FrontPointer).Item1
             Queue.RemoveAt(FrontPointer)
             RearPointer -= 1
             Select Case RearPointer
@@ -70,7 +66,7 @@
         End If
     End Function
 
-    Public Function Peek() As Template
+    Public Function Peek() As T
         If Queue.Count > 0 Then
             Return Queue(FrontPointer).Item1
         Else
@@ -78,7 +74,7 @@
         End If
     End Function
 
-    Public Function Contains(Element As Template) As Boolean
+    Public Function Contains(Element As T) As Boolean
         Return Queue.Contains(Tuple.Create(Element, 0)) OrElse Queue.Contains(Tuple.Create(Element, 1))
     End Function
 
