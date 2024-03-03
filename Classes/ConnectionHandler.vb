@@ -6,14 +6,17 @@ Imports System.Threading
 Imports System.Text
 
 Public Class ConnectionHandler
-    Private UDPSender As UdpClient
-    Private UDPReceiver As UdpClient
+    Private ReadOnly RemoteEP As New IPEndPoint(IPAddress.Any, ServerPort) 'receiving endpoint
+    Private ReadOnly BroadcastEP As New IPEndPoint(IPAddress.Broadcast, ClientPort) 'broadcasting endpoint
+
+    Private UDPSender As UdpClient 'sending client
+    Private UDPReceiver As UdpClient 'receving client
 
     Private BroadcastThread As Thread
     Private ListenerThread As Thread
-    Private ConRespThread As Thread
-
-    Public Sub Start()
+    Private ConRespThread As Thread 'thread to respond on
+    Public KillHandler As Boolean = False 'flag for destructor
+    Public Sub Start() 'initialises the threads based on program flags
         If IsLeaf AndAlso IsSynchronised Then 'sending connection requests (as you are the leaf node and synchronised to the chain now)
             UDPSender = New UdpClient(BroadcastEP) With {.EnableBroadcast = True}
             BroadcastThread = New Thread(AddressOf BroadcastConnectionRequest) With {.IsBackground = True}
@@ -32,22 +35,20 @@ Public Class ConnectionHandler
 
     Public Sub Disconnect() 'for a device leaving the application to notify its peers that it doesnt exist anymore
         Try
-            Dim DCRequest As New DisconnectRequest()
-            If PrevTCP IsNot Nothing Then
-                PrevTCP.SendData(DCRequest.GetJSONMessage)
-            End If
-            If NextTCP IsNot Nothing Then
-                NextTCP.SendData(DCRequest.GetJSONMessage)
-            End If
+            Dim DCRequest As New DisconnectRequest() 'sends a disconnect request to prev and/or next pointer
+            PrevTCP?.SendData(DCRequest.GetJSONMessage)
+            NextTCP?.SendData(DCRequest.GetJSONMessage)
+            KillHandler = True
+            'can get out of the app now, goodbye and fuck off
         Catch ex As Exception
-            CustomMsgBox.ShowBox($"Error in UDPHandler.Disconnect sub, error: {ex.Message}")
-            Disconnect() 'i dont know why this is a good idea but it should work
+            Dim DCRequest As New DisconnectRequest()
+            PrevTCP?.SendData(DCRequest.GetJSONMessage)
+            NextTCP?.SendData(DCRequest.GetJSONMessage)
+            KillHandler = True
         End Try
     End Sub
     Private Sub ListenForBroadcasts() 'awesome ostrich algorithm use-case
-        While AppRunning AndAlso Not IsSynchronised
-            UDPReceiver = New UdpClient(RemoteEP) With {.EnableBroadcast = False}
-            UDPReceiver.Client.ReceiveTimeout = 2000
+        While AppRunning AndAlso Not IsSynchronised And Not KillHandler
             Try
                 Dim RecvBytes As Byte() = UDPReceiver.Receive(RemoteEP)
                 Dim RecvData As String = Encoding.UTF8.GetString(RecvBytes)
@@ -64,7 +65,7 @@ Public Class ConnectionHandler
                         SendConnectionResponse(PreviousPointer)
                         'sends a response for the node to allow them to begin a tcp/ip session with this node for bidirectional comms
 
-                        Dim SyncReq As New SyncRequest() 'sending to root node to sync with it
+                        Dim SyncReq As New SyncRequest(LocalSync()) 'sending to root node to sync with it
                         Dim TempTCPHandler As New TCPHandler(IPAddress.Parse(ROOT_IP))
                         TempTCPHandler.SendData(SyncReq.GetJSONMessage)
                         Exit Sub
@@ -96,7 +97,7 @@ Public Class ConnectionHandler
     End Function
 
     Private Sub BroadcastConnectionRequest() 'send con requests while connection response not received, i.e. if IsLeaf = true
-        While AppRunning AndAlso IsLeaf AndAlso IsSynchronised 'sends 20 (+-) requests per second of size < 1kb (so using a max of 160kbits/s, insignificant)
+        While AppRunning AndAlso IsLeaf AndAlso IsSynchronised And Not KillHandler 'sends 20 (+-) requests per second of size < 1kb (so using a max of 160kbits/s, insignificant)
             Try
                 Dim ConReq As New ConnectionRequest()
                 Dim Bytes() As Byte = Encoding.UTF8.GetBytes(ConReq.GetJSONMessage)
@@ -110,13 +111,13 @@ Public Class ConnectionHandler
     End Sub
 
     Private Sub ListenForResponse()
-        While AppRunning AndAlso IsLeaf AndAlso IsSynchronised
-            Try
-                Dim RecvBytes As Byte() = UDPReceiver.Receive(RemoteEP)
-                Dim RecvData As String = Encoding.UTF8.GetString(RecvBytes)
+        While AppRunning AndAlso IsLeaf AndAlso IsSynchronised AndAlso Not KillHandler 'you only listen for responses if you are synchronised
+            Try 'killhandler is for destructing the class instance
+                Dim RecvBytes As Byte() = UDPReceiver.Receive(RemoteEP) 'receive a udp datagram if there is one to receive
+                Dim RecvData As String = Encoding.UTF8.GetString(RecvBytes) 'convert bytes to string
                 Dim JsonObject As Object = JObject.Parse(RecvData) 'dynamic json object variable that parses data into a json style format for lookups efficiently
                 Dim MessageType As String = JsonObject("MessageType").ToString
-                Select Case MessageType
+                Select Case MessageType 'check what kind of message arrived
                     Case "ConnectionResponse"
                         Dim DeviceIP As IPAddress = IPAddress.Parse(JsonObject("DeviceIP"))
                         NextPointer = DeviceIP.ToString
@@ -126,7 +127,7 @@ Public Class ConnectionHandler
                         Throw New Exception
                 End Select
             Catch ex As Exception
-
+                'do nothing, keep listening
             End Try
         End While
     End Sub

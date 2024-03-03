@@ -37,9 +37,9 @@ Partial Class NetStatusView
         Me.GetHelpManual.BackColor = System.Drawing.Color.FromArgb(CType(CType(128, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
         Me.GetHelpManual.Font = New System.Drawing.Font("Bahnschrift Light", 12.0!)
         Me.GetHelpManual.ForeColor = System.Drawing.Color.Goldenrod
-        Me.GetHelpManual.Location = New System.Drawing.Point(21, 189)
+        Me.GetHelpManual.Location = New System.Drawing.Point(12, 223)
         Me.GetHelpManual.Name = "GetHelpManual"
-        Me.GetHelpManual.Size = New System.Drawing.Size(173, 51)
+        Me.GetHelpManual.Size = New System.Drawing.Size(201, 63)
         Me.GetHelpManual.TabIndex = 3
         Me.GetHelpManual.Text = "ABOUT THE WAYFARER SYSTEM"
         Me.GetHelpManual.UseVisualStyleBackColor = False
@@ -49,9 +49,9 @@ Partial Class NetStatusView
         Me.Label1.BackColor = System.Drawing.SystemColors.ActiveCaption
         Me.Label1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
         Me.Label1.Font = New System.Drawing.Font("Bahnschrift Light", 18.0!)
-        Me.Label1.Location = New System.Drawing.Point(200, 11)
+        Me.Label1.Location = New System.Drawing.Point(219, 18)
         Me.Label1.Name = "Label1"
-        Me.Label1.Size = New System.Drawing.Size(276, 77)
+        Me.Label1.Size = New System.Drawing.Size(303, 54)
         Me.Label1.TabIndex = 5
         Me.Label1.Text = "NETWORK STATUS"
         Me.Label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
@@ -61,9 +61,9 @@ Partial Class NetStatusView
         Me.Disconnect.BackColor = System.Drawing.Color.FromArgb(CType(CType(245, Byte), Integer), CType(CType(0, Byte), Integer), CType(CType(50, Byte), Integer))
         Me.Disconnect.Font = New System.Drawing.Font("Bahnschrift", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.Disconnect.ForeColor = System.Drawing.Color.Goldenrod
-        Me.Disconnect.Location = New System.Drawing.Point(23, 316)
+        Me.Disconnect.Location = New System.Drawing.Point(219, 331)
         Me.Disconnect.Name = "Disconnect"
-        Me.Disconnect.Size = New System.Drawing.Size(300, 51)
+        Me.Disconnect.Size = New System.Drawing.Size(222, 66)
         Me.Disconnect.TabIndex = 17
         Me.Disconnect.Text = "DISCONNECT FROM WAYFARER SYSTEM"
         Me.Disconnect.UseVisualStyleBackColor = False
@@ -73,9 +73,9 @@ Partial Class NetStatusView
         Me.StatusLbl.BackColor = System.Drawing.Color.FromArgb(CType(CType(224, Byte), Integer), CType(CType(224, Byte), Integer), CType(CType(224, Byte), Integer))
         Me.StatusLbl.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
         Me.StatusLbl.Font = New System.Drawing.Font("Bahnschrift", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.StatusLbl.Location = New System.Drawing.Point(23, 243)
+        Me.StatusLbl.Location = New System.Drawing.Point(12, 289)
         Me.StatusLbl.Name = "StatusLbl"
-        Me.StatusLbl.Size = New System.Drawing.Size(173, 67)
+        Me.StatusLbl.Size = New System.Drawing.Size(201, 108)
         Me.StatusLbl.TabIndex = 18
         Me.StatusLbl.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
         '
@@ -84,22 +84,22 @@ Partial Class NetStatusView
         Me.NetStatusTxt.BackColor = System.Drawing.Color.Ivory
         Me.NetStatusTxt.Font = New System.Drawing.Font("Bahnschrift", 15.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.NetStatusTxt.ForeColor = System.Drawing.Color.Red
-        Me.NetStatusTxt.Location = New System.Drawing.Point(202, 91)
+        Me.NetStatusTxt.Location = New System.Drawing.Point(219, 86)
         Me.NetStatusTxt.Name = "NetStatusTxt"
         Me.NetStatusTxt.ReadOnly = True
-        Me.NetStatusTxt.Size = New System.Drawing.Size(274, 219)
+        Me.NetStatusTxt.Size = New System.Drawing.Size(303, 200)
         Me.NetStatusTxt.TabIndex = 23
-        Me.NetStatusTxt.Text = "DEVICES: ""2""" & Global.Microsoft.VisualBasic.ChrW(10) & "PREVPTR: ""DEVICE4""" & Global.Microsoft.VisualBasic.ChrW(10) & "NEXTPTR: ""NULL""" & Global.Microsoft.VisualBasic.ChrW(10) & "NODETYPE: ""LEAF""" & Global.Microsoft.VisualBasic.ChrW(10) & "IPADDRESS: ""192." &
-    "168.1.120""" & Global.Microsoft.VisualBasic.ChrW(10) & "ONLINE: ""TRUE"""
+        Me.NetStatusTxt.Text = "PREVPTR: ""DEVICE4""" & Global.Microsoft.VisualBasic.ChrW(10) & "NEXTPTR: ""NULL""" & Global.Microsoft.VisualBasic.ChrW(10) & "NODETYPE: ""LEAF""" & Global.Microsoft.VisualBasic.ChrW(10) & "IPADDRESS: ""192.168.1.120""" & Global.Microsoft.VisualBasic.ChrW(10) & "ON" &
+    "LINE: ""TRUE"""
         '
         'BackBtn
         '
         Me.BackBtn.BackColor = System.Drawing.Color.FromArgb(CType(CType(245, Byte), Integer), CType(CType(0, Byte), Integer), CType(CType(50, Byte), Integer))
         Me.BackBtn.Font = New System.Drawing.Font("Bahnschrift", 12.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.BackBtn.ForeColor = System.Drawing.Color.Goldenrod
-        Me.BackBtn.Location = New System.Drawing.Point(325, 316)
+        Me.BackBtn.Location = New System.Drawing.Point(447, 331)
         Me.BackBtn.Name = "BackBtn"
-        Me.BackBtn.Size = New System.Drawing.Size(151, 51)
+        Me.BackBtn.Size = New System.Drawing.Size(75, 66)
         Me.BackBtn.TabIndex = 34
         Me.BackBtn.Text = "BACK TO MENU"
         Me.BackBtn.UseVisualStyleBackColor = False
@@ -107,9 +107,9 @@ Partial Class NetStatusView
         'PictureBox1
         '
         Me.PictureBox1.Image = Global.ProjectBlockchain.My.Resources.Resources.Logo
-        Me.PictureBox1.Location = New System.Drawing.Point(21, 11)
+        Me.PictureBox1.Location = New System.Drawing.Point(12, 18)
         Me.PictureBox1.Name = "PictureBox1"
-        Me.PictureBox1.Size = New System.Drawing.Size(173, 172)
+        Me.PictureBox1.Size = New System.Drawing.Size(201, 199)
         Me.PictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage
         Me.PictureBox1.TabIndex = 24
         Me.PictureBox1.TabStop = False
@@ -119,7 +119,7 @@ Partial Class NetStatusView
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.BackColor = System.Drawing.Color.FromArgb(CType(CType(60, Byte), Integer), CType(CType(60, Byte), Integer), CType(CType(70, Byte), Integer))
-        Me.ClientSize = New System.Drawing.Size(498, 384)
+        Me.ClientSize = New System.Drawing.Size(551, 416)
         Me.Controls.Add(Me.BackBtn)
         Me.Controls.Add(Me.PictureBox1)
         Me.Controls.Add(Me.NetStatusTxt)

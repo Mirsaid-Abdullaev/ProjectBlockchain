@@ -38,9 +38,9 @@ Partial Class BlockchainExplorerF
         Me.GetHelpManual.BackColor = System.Drawing.Color.FromArgb(CType(CType(128, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
         Me.GetHelpManual.Font = New System.Drawing.Font("Bahnschrift Light", 12.0!)
         Me.GetHelpManual.ForeColor = System.Drawing.Color.Goldenrod
-        Me.GetHelpManual.Location = New System.Drawing.Point(8, 181)
+        Me.GetHelpManual.Location = New System.Drawing.Point(8, 240)
         Me.GetHelpManual.Name = "GetHelpManual"
-        Me.GetHelpManual.Size = New System.Drawing.Size(173, 51)
+        Me.GetHelpManual.Size = New System.Drawing.Size(248, 75)
         Me.GetHelpManual.TabIndex = 3
         Me.GetHelpManual.Text = "ABOUT THE WAYFARER SYSTEM"
         Me.GetHelpManual.UseVisualStyleBackColor = False
@@ -50,9 +50,9 @@ Partial Class BlockchainExplorerF
         Me.Label1.BackColor = System.Drawing.SystemColors.ActiveCaption
         Me.Label1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
         Me.Label1.Font = New System.Drawing.Font("Bahnschrift Light", 18.0!)
-        Me.Label1.Location = New System.Drawing.Point(187, 3)
+        Me.Label1.Location = New System.Drawing.Point(262, 3)
         Me.Label1.Name = "Label1"
-        Me.Label1.Size = New System.Drawing.Size(433, 77)
+        Me.Label1.Size = New System.Drawing.Size(757, 77)
         Me.Label1.TabIndex = 5
         Me.Label1.Text = "BLOCKCHAIN EXPLORER"
         Me.Label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
@@ -62,9 +62,9 @@ Partial Class BlockchainExplorerF
         Me.Disconnect.BackColor = System.Drawing.Color.FromArgb(CType(CType(245, Byte), Integer), CType(CType(0, Byte), Integer), CType(CType(50, Byte), Integer))
         Me.Disconnect.Font = New System.Drawing.Font("Bahnschrift", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.Disconnect.ForeColor = System.Drawing.Color.Goldenrod
-        Me.Disconnect.Location = New System.Drawing.Point(8, 357)
+        Me.Disconnect.Location = New System.Drawing.Point(262, 481)
         Me.Disconnect.Name = "Disconnect"
-        Me.Disconnect.Size = New System.Drawing.Size(455, 51)
+        Me.Disconnect.Size = New System.Drawing.Size(558, 51)
         Me.Disconnect.TabIndex = 17
         Me.Disconnect.Text = "DISCONNECT FROM WAYFARER SYSTEM"
         Me.Disconnect.UseVisualStyleBackColor = False
@@ -74,9 +74,9 @@ Partial Class BlockchainExplorerF
         Me.StatusLbl.BackColor = System.Drawing.Color.FromArgb(CType(CType(224, Byte), Integer), CType(CType(224, Byte), Integer), CType(CType(224, Byte), Integer))
         Me.StatusLbl.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
         Me.StatusLbl.Font = New System.Drawing.Font("Bahnschrift", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.StatusLbl.Location = New System.Drawing.Point(8, 284)
+        Me.StatusLbl.Location = New System.Drawing.Point(8, 408)
         Me.StatusLbl.Name = "StatusLbl"
-        Me.StatusLbl.Size = New System.Drawing.Size(173, 67)
+        Me.StatusLbl.Size = New System.Drawing.Size(248, 126)
         Me.StatusLbl.TabIndex = 18
         Me.StatusLbl.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
         '
@@ -85,9 +85,9 @@ Partial Class BlockchainExplorerF
         Me.BackBtn.BackColor = System.Drawing.Color.FromArgb(CType(CType(245, Byte), Integer), CType(CType(0, Byte), Integer), CType(CType(50, Byte), Integer))
         Me.BackBtn.Font = New System.Drawing.Font("Bahnschrift", 12.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.BackBtn.ForeColor = System.Drawing.Color.Goldenrod
-        Me.BackBtn.Location = New System.Drawing.Point(469, 357)
+        Me.BackBtn.Location = New System.Drawing.Point(826, 481)
         Me.BackBtn.Name = "BackBtn"
-        Me.BackBtn.Size = New System.Drawing.Size(151, 51)
+        Me.BackBtn.Size = New System.Drawing.Size(193, 51)
         Me.BackBtn.TabIndex = 34
         Me.BackBtn.Text = "BACK TO MENU"
         Me.BackBtn.UseVisualStyleBackColor = False
@@ -97,7 +97,7 @@ Partial Class BlockchainExplorerF
         Me.PictureBox1.Image = Global.ProjectBlockchain.My.Resources.Resources.Logo
         Me.PictureBox1.Location = New System.Drawing.Point(8, 3)
         Me.PictureBox1.Name = "PictureBox1"
-        Me.PictureBox1.Size = New System.Drawing.Size(173, 172)
+        Me.PictureBox1.Size = New System.Drawing.Size(248, 231)
         Me.PictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage
         Me.PictureBox1.TabIndex = 24
         Me.PictureBox1.TabStop = False
@@ -105,11 +105,12 @@ Partial Class BlockchainExplorerF
         'BlockchainTxt
         '
         Me.BlockchainTxt.BackColor = System.Drawing.Color.Ivory
-        Me.BlockchainTxt.Font = New System.Drawing.Font("Bahnschrift Light", 10.0!)
-        Me.BlockchainTxt.ForeColor = System.Drawing.Color.Red
-        Me.BlockchainTxt.Location = New System.Drawing.Point(187, 83)
+        Me.BlockchainTxt.Font = New System.Drawing.Font("Lucida Console", 12.75!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.BlockchainTxt.ForeColor = System.Drawing.Color.Navy
+        Me.BlockchainTxt.Location = New System.Drawing.Point(262, 83)
         Me.BlockchainTxt.Name = "BlockchainTxt"
-        Me.BlockchainTxt.Size = New System.Drawing.Size(433, 268)
+        Me.BlockchainTxt.ReadOnly = True
+        Me.BlockchainTxt.Size = New System.Drawing.Size(757, 390)
         Me.BlockchainTxt.TabIndex = 35
         Me.BlockchainTxt.Text = resources.GetString("BlockchainTxt.Text")
         '
@@ -118,7 +119,7 @@ Partial Class BlockchainExplorerF
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.BackColor = System.Drawing.Color.FromArgb(CType(CType(60, Byte), Integer), CType(CType(60, Byte), Integer), CType(CType(70, Byte), Integer))
-        Me.ClientSize = New System.Drawing.Size(634, 420)
+        Me.ClientSize = New System.Drawing.Size(1031, 547)
         Me.Controls.Add(Me.BlockchainTxt)
         Me.Controls.Add(Me.BackBtn)
         Me.Controls.Add(Me.PictureBox1)

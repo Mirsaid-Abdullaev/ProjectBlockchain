@@ -4,10 +4,7 @@
         Me.Hide()
         WalletBaseView.ShowDialog()
         Me.StatusLbl.Text = StatusLblText
-        Try
-            Me.Show()
-        Catch ex As Exception
-        End Try
+        Me.Show()
         GC.Collect()
     End Sub
 
@@ -19,18 +16,19 @@
 
     Private Sub Disconnect_Click(sender As Object, e As EventArgs) Handles Disconnect.Click
         AppRunning = False
-        'SendDisconnectedJSONToPrevPtr - add when configured
+        DisconnectFromChain()
         Application.Exit()
     End Sub
 
     Private Sub GetSendingView_Click(sender As Object, e As EventArgs) Handles GetSendingView.Click
+        If CurrentWallet Is Nothing Then
+            CustomMsgBox.ShowBox("Error: no wallet logged in. Cannot send cryptocurrency if there is no source address. Log into a wallet and try again.", "ERROR", False)
+            Exit Sub
+        End If
         Me.Hide()
         SendingScreen.ShowDialog()
         Me.StatusLbl.Text = StatusLblText
-        Try
-            Me.Show()
-        Catch ex As Exception
-        End Try
+        Me.Show()
         GC.Collect()
     End Sub
 
@@ -38,11 +36,7 @@
         Me.Hide()
         TransactPoolView.ShowDialog()
         Me.StatusLbl.Text = StatusLblText
-        Try
-            Me.Show()
-        Catch ex As Exception
-            Me.Show()
-        End Try
+        Me.Show()
         GC.Collect()
     End Sub
 
@@ -50,10 +44,7 @@
         Me.Hide()
         BaseViewingForm.ShowDialog()
         Me.StatusLbl.Text = StatusLblText
-        Try
-            Me.Show()
-        Catch ex As Exception
-        End Try
+        Me.Show()
         GC.Collect()
     End Sub
 End Class

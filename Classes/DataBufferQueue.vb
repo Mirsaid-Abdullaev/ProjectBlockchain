@@ -3,15 +3,22 @@
     ' List(Of Tuple(Of Template, Integer)) to store both the element and its priority
     Private Property Queue As List(Of Tuple(Of T, Integer))
     Private Property MaxSize As Integer
-    ' FrontPointer is not required - the first data item in the queue will always be in the 0th index
+    ' FrontPointer is not required to change - the first data item in the queue will always be in the 0th index
     Private Const FrontPointer As Integer = 0
-    Public Property IsEmpty As Boolean
-    Public Property IsFull As Boolean
+    Private Property QueueEmpty As Boolean
+    Public Function IsEmpty() As Boolean
+        Return QueueEmpty
+    End Function
+
+    Private Property QueueFull As Boolean
+    Public Function IsFull() As Boolean
+        Return QueueFull
+    End Function
 
     Public Sub New(Optional MaxSize As Integer = 200)
         Me.MaxSize = MaxSize
-        IsEmpty = True
-        IsFull = False
+        QueueEmpty = True
+        QueueFull = False
         Queue = New List(Of Tuple(Of T, Integer))
     End Sub
 
@@ -22,7 +29,7 @@
                     ' Remove the first item in the queue and update pointers
                     Queue.RemoveAt(FrontPointer)
                     RearPointer -= 1
-                    IsEmpty = True
+                    QueueEmpty = True
                 Case Else
                     ' Remove the first item in the queue and update pointers
                     Queue.RemoveAt(FrontPointer)
@@ -32,22 +39,19 @@
     End Sub
 
     Public Sub Enqueue(Data As T, Optional Priority As String = "")
-        EnqueueWithPriority(Data, If(Priority.ToLower() = "high", 0, 1)) '0 is high priority, 1 is everything else, checks for priority string high, else default priority
-    End Sub
-
-    Private Sub EnqueueWithPriority(Data As T, Priority As Integer)
+        Dim PriorityInt As Integer = If(Priority.ToLower() = "high", 0, 1) '0 is high priority, 1 is everything else, checks for priority string high, else default priority
         If RearPointer < MaxSize - 1 Then
             RearPointer += 1
             ' Add the element and its priority to the queue
-            Queue.Add(Tuple.Create(Data, Priority))
+            Queue.Add(Tuple.Create(Data, PriorityInt))
             Queue = Queue.OrderBy(Function(item) item.Item2).ToList() 'sorts the list by the priority key, ascending so 0 = high, 1 = low
             If RearPointer = MaxSize - 1 Then
-                IsFull = True
+                QueueFull = True
             End If
         Else
             CustomMsgBox.ShowBox("Error: DataBufferQueue full. Item not added. Try again.", "ERROR", False)
         End If
-        IsEmpty = False
+        QueueEmpty = False
     End Sub
 
     Public Function Dequeue() As T
@@ -58,7 +62,7 @@
             RearPointer -= 1
             Select Case RearPointer
                 Case -1 ' last item in the queue
-                    IsEmpty = True
+                    QueueEmpty = True
             End Select
             Return Data
         Else
@@ -80,5 +84,9 @@
 
     Public Function GetCurrentSize() As Integer
         Return RearPointer + 1
+    End Function
+
+    Public Function GetQueueAsList()
+        Return Queue.Select(Function(item) item.Item1).ToList
     End Function
 End Class

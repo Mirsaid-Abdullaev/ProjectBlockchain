@@ -5,13 +5,13 @@ Imports System.Text
 Imports System.Threading
 
 Public Class TCPHandler
-    Private Client As TcpClient
-    Private Server As TcpListener
-    Private DeviceIP As IPAddress
-    Private ServerThread As Thread
-    Public Sub New(DeviceIP As IPAddress)
+    Private ReadOnly Client As TcpClient
+    Private ReadOnly Server As TcpListener
+    Public ReadOnly DeviceIP As IPAddress
+    Private ReadOnly ServerThread As Thread
+    Public Sub New(DeviceIP As IPAddress, Optional ClientPort As Integer = 36000)
         Client = New TcpClient()
-        Server = New TcpListener(DeviceIP, 36000)
+        Server = New TcpListener(DeviceIP, ClientPort)
         Me.DeviceIP = DeviceIP
 
         ServerThread = New Thread(AddressOf ReceiveData) With {.IsBackground = True}

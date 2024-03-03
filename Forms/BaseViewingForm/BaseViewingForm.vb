@@ -7,7 +7,7 @@
 
     Private Sub Disconnect_Click(sender As Object, e As EventArgs) Handles Disconnect.Click
         AppRunning = False
-        'SendDisconnectedJSONToPrevPtr - add when configured
+        DisconnectFromChain()
         Application.Exit()
     End Sub
 
@@ -18,6 +18,7 @@
         Try
             Me.Show()
         Catch ex As Exception
+            Me.Close()
         End Try
         GC.Collect()
     End Sub
@@ -35,6 +36,7 @@
         Try
             Me.Show()
         Catch ex As Exception
+            Me.Close()
         End Try
         GC.Collect()
     End Sub
@@ -46,6 +48,7 @@
         Try
             Me.Show()
         Catch ex As Exception
+            Me.Close()
         End Try
         GC.Collect()
     End Sub

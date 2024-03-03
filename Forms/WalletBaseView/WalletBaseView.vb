@@ -1,4 +1,6 @@
 ﻿Imports System.IO
+Imports System.Net
+Imports System.Security.Authentication
 Public Class WalletBaseView
 
     Private Sub WalletBaseView_Load(sender As Object, e As EventArgs) Handles MyBase.Load
@@ -72,7 +74,26 @@ Public Class WalletBaseView
     End Sub
 
     Private Sub ViewWallets_Click(sender As Object, e As EventArgs) Handles ViewWallets.Click
-        CustomListBoxInputBox.ShowInputBox("ALL LOCALLY STORED WALLETS", False, "VIEW WALLETS")
+        Dim Result As String = CustomListBoxInputBox.ShowInputBox("ALL LOCALLY STORED WALLETS", False, "VIEW WALLETS")(0)
+        If Result = String.Empty Then
+            Exit Sub
+        End If
+        Dim Address As String
+        Using SR As New StreamReader(DirectoryList(0) & Result)
+            Address = SR.ReadLine
+        End Using
+        If Not CustomMsgBox.ShowBox($"ADDRESS: {Address}" & vbCrLf & "Would you like to see a QR of the wallet address before exiting?", "SHOW QR OF WALLET ADDRESS", True) Then
+            Exit Sub
+        End If
+        Try
+            Dim QR As Image = GenerateQR(Address)
+            If QR Is Nothing Then
+                Exit Sub
+            End If
+            ImagePopupForm.ShowBox(QR, "WALLET ADDRESS IN QR FORMAT")
+        Catch ex As Exception
+            Exit Sub
+        End Try
         GC.Collect()
     End Sub
 
@@ -131,4 +152,25 @@ Public Class WalletBaseView
         Me.Close()
         GC.Collect()
     End Sub
+
+    Public Function GenerateQR(StrToConvert As String) As Image 'returns a QR code, courtesy of https://www.c-sharpcorner.com/article/create-qr-code-using-google-charts-api-in-vb-net/ by Uday Dodiya
+        Dim Data As String = StrToConvert
+        Dim QrLink As String = "https://chart.googleapis.com/chart?cht=qr&chs=300x300&chl="
+        QrLink &= Data
+        Try
+            Using WebClient As New WebClient
+                Const _Tls12 As SslProtocols = &HC00
+                Const Tls12 As SecurityProtocolType = _Tls12
+                ServicePointManager.SecurityProtocol = Tls12
+                Dim Bytes As Byte() = WebClient.DownloadData(QrLink)
+                Using MS = New MemoryStream(Bytes)
+                    Return Image.FromStream(MS)
+                End Using
+            End Using
+        Catch ex As Exception
+            CustomMsgBox.ShowBox("Error while generating QR, sorry for the inconvenience.", "ERROR", False)
+            Return Nothing
+        End Try
+    End Function
+
 End Class

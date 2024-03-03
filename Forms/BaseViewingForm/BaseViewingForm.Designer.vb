@@ -40,9 +40,9 @@ Partial Class BaseViewingForm
         Me.GetHelpManual.BackColor = System.Drawing.Color.FromArgb(CType(CType(128, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
         Me.GetHelpManual.Font = New System.Drawing.Font("Bahnschrift Light", 12.0!)
         Me.GetHelpManual.ForeColor = System.Drawing.Color.Goldenrod
-        Me.GetHelpManual.Location = New System.Drawing.Point(10, 185)
+        Me.GetHelpManual.Location = New System.Drawing.Point(8, 211)
         Me.GetHelpManual.Name = "GetHelpManual"
-        Me.GetHelpManual.Size = New System.Drawing.Size(171, 51)
+        Me.GetHelpManual.Size = New System.Drawing.Size(201, 51)
         Me.GetHelpManual.TabIndex = 3
         Me.GetHelpManual.Text = "ABOUT THE WAYFARER SYSTEM"
         Me.GetHelpManual.UseVisualStyleBackColor = False
@@ -52,9 +52,9 @@ Partial Class BaseViewingForm
         Me.Label1.BackColor = System.Drawing.SystemColors.ActiveCaption
         Me.Label1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
         Me.Label1.Font = New System.Drawing.Font("Bahnschrift Light", 18.0!)
-        Me.Label1.Location = New System.Drawing.Point(187, 10)
+        Me.Label1.Location = New System.Drawing.Point(215, 9)
         Me.Label1.Name = "Label1"
-        Me.Label1.Size = New System.Drawing.Size(418, 64)
+        Me.Label1.Size = New System.Drawing.Size(456, 64)
         Me.Label1.TabIndex = 5
         Me.Label1.Text = "VIEWING FORMS OPTIONS"
         Me.Label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
@@ -64,9 +64,9 @@ Partial Class BaseViewingForm
         Me.Disconnect.BackColor = System.Drawing.Color.FromArgb(CType(CType(245, Byte), Integer), CType(CType(0, Byte), Integer), CType(CType(50, Byte), Integer))
         Me.Disconnect.Font = New System.Drawing.Font("Bahnschrift", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.Disconnect.ForeColor = System.Drawing.Color.Goldenrod
-        Me.Disconnect.Location = New System.Drawing.Point(189, 242)
+        Me.Disconnect.Location = New System.Drawing.Point(215, 295)
         Me.Disconnect.Name = "Disconnect"
-        Me.Disconnect.Size = New System.Drawing.Size(318, 51)
+        Me.Disconnect.Size = New System.Drawing.Size(318, 68)
         Me.Disconnect.TabIndex = 17
         Me.Disconnect.Text = "DISCONNECT FROM WAYFARER SYSTEM"
         Me.Disconnect.UseVisualStyleBackColor = False
@@ -76,9 +76,9 @@ Partial Class BaseViewingForm
         Me.StatusLbl.BackColor = System.Drawing.Color.FromArgb(CType(CType(224, Byte), Integer), CType(CType(224, Byte), Integer), CType(CType(224, Byte), Integer))
         Me.StatusLbl.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
         Me.StatusLbl.Font = New System.Drawing.Font("Bahnschrift", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.StatusLbl.Location = New System.Drawing.Point(10, 242)
+        Me.StatusLbl.Location = New System.Drawing.Point(8, 265)
         Me.StatusLbl.Name = "StatusLbl"
-        Me.StatusLbl.Size = New System.Drawing.Size(172, 51)
+        Me.StatusLbl.Size = New System.Drawing.Size(201, 98)
         Me.StatusLbl.TabIndex = 18
         Me.StatusLbl.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
         '
@@ -87,7 +87,7 @@ Partial Class BaseViewingForm
         Me.PictureBox1.Image = Global.ProjectBlockchain.My.Resources.Resources.Logo
         Me.PictureBox1.Location = New System.Drawing.Point(8, 10)
         Me.PictureBox1.Name = "PictureBox1"
-        Me.PictureBox1.Size = New System.Drawing.Size(173, 172)
+        Me.PictureBox1.Size = New System.Drawing.Size(201, 195)
         Me.PictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage
         Me.PictureBox1.TabIndex = 33
         Me.PictureBox1.TabStop = False
@@ -97,9 +97,9 @@ Partial Class BaseViewingForm
         Me.BlockchainExpF.BackColor = System.Drawing.Color.FromArgb(CType(CType(224, Byte), Integer), CType(CType(224, Byte), Integer), CType(CType(224, Byte), Integer))
         Me.BlockchainExpF.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.BlockchainExpF.ForeColor = System.Drawing.Color.Goldenrod
-        Me.BlockchainExpF.Location = New System.Drawing.Point(188, 158)
+        Me.BlockchainExpF.Location = New System.Drawing.Point(215, 177)
         Me.BlockchainExpF.Name = "BlockchainExpF"
-        Me.BlockchainExpF.Size = New System.Drawing.Size(418, 74)
+        Me.BlockchainExpF.Size = New System.Drawing.Size(456, 85)
         Me.BlockchainExpF.TabIndex = 37
         Me.BlockchainExpF.Text = "BLOCKCHAIN EXPLORER - FULL VIEW"
         Me.BlockchainExpF.UseVisualStyleBackColor = False
@@ -109,9 +109,9 @@ Partial Class BaseViewingForm
         Me.NetworkStatusView.BackColor = System.Drawing.Color.FromArgb(CType(CType(224, Byte), Integer), CType(CType(224, Byte), Integer), CType(CType(224, Byte), Integer))
         Me.NetworkStatusView.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.NetworkStatusView.ForeColor = System.Drawing.Color.Goldenrod
-        Me.NetworkStatusView.Location = New System.Drawing.Point(399, 77)
+        Me.NetworkStatusView.Location = New System.Drawing.Point(443, 89)
         Me.NetworkStatusView.Name = "NetworkStatusView"
-        Me.NetworkStatusView.Size = New System.Drawing.Size(206, 75)
+        Me.NetworkStatusView.Size = New System.Drawing.Size(228, 85)
         Me.NetworkStatusView.TabIndex = 36
         Me.NetworkStatusView.Text = "NETWORK STATUS VIEW"
         Me.NetworkStatusView.UseVisualStyleBackColor = False
@@ -121,9 +121,9 @@ Partial Class BaseViewingForm
         Me.BlockchainExpH.BackColor = System.Drawing.Color.FromArgb(CType(CType(224, Byte), Integer), CType(CType(224, Byte), Integer), CType(CType(224, Byte), Integer))
         Me.BlockchainExpH.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.BlockchainExpH.ForeColor = System.Drawing.Color.Goldenrod
-        Me.BlockchainExpH.Location = New System.Drawing.Point(188, 77)
+        Me.BlockchainExpH.Location = New System.Drawing.Point(215, 89)
         Me.BlockchainExpH.Name = "BlockchainExpH"
-        Me.BlockchainExpH.Size = New System.Drawing.Size(205, 75)
+        Me.BlockchainExpH.Size = New System.Drawing.Size(222, 84)
         Me.BlockchainExpH.TabIndex = 34
         Me.BlockchainExpH.Text = "BLOCKCHAIN EXPLORER - HEADER VIEW"
         Me.BlockchainExpH.UseVisualStyleBackColor = False
@@ -133,9 +133,9 @@ Partial Class BaseViewingForm
         Me.BackBtn.BackColor = System.Drawing.Color.FromArgb(CType(CType(245, Byte), Integer), CType(CType(0, Byte), Integer), CType(CType(50, Byte), Integer))
         Me.BackBtn.Font = New System.Drawing.Font("Bahnschrift", 9.75!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.BackBtn.ForeColor = System.Drawing.Color.Goldenrod
-        Me.BackBtn.Location = New System.Drawing.Point(513, 242)
+        Me.BackBtn.Location = New System.Drawing.Point(539, 295)
         Me.BackBtn.Name = "BackBtn"
-        Me.BackBtn.Size = New System.Drawing.Size(93, 51)
+        Me.BackBtn.Size = New System.Drawing.Size(132, 68)
         Me.BackBtn.TabIndex = 38
         Me.BackBtn.Text = "BACK TO MENU"
         Me.BackBtn.UseVisualStyleBackColor = False
@@ -145,7 +145,7 @@ Partial Class BaseViewingForm
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.BackColor = System.Drawing.Color.FromArgb(CType(CType(60, Byte), Integer), CType(CType(60, Byte), Integer), CType(CType(70, Byte), Integer))
-        Me.ClientSize = New System.Drawing.Size(613, 313)
+        Me.ClientSize = New System.Drawing.Size(683, 372)
         Me.Controls.Add(Me.BackBtn)
         Me.Controls.Add(Me.BlockchainExpF)
         Me.Controls.Add(Me.NetworkStatusView)

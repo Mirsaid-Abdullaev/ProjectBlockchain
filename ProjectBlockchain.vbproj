@@ -196,11 +196,11 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <Compile Include="Namespaces\Design.vb" />
-    <Compile Include="Namespaces\Synchronisation.vb" />
-    <Compile Include="Namespaces\AppGlobals.vb" />
-    <Compile Include="Namespaces\Network.vb" />
-    <Compile Include="Namespaces\Startup.vb" />
+    <Compile Include="Modules\Design.vb" />
+    <Compile Include="Modules\Synchronisation.vb" />
+    <Compile Include="Modules\AppGlobals.vb" />
+    <Compile Include="Modules\JSONSchemas.vb" />
+    <Compile Include="Modules\Startup.vb" />
     <Compile Include="obj\Debug\.NETFramework,Version=v4.7.2.AssemblyAttributes.vb" />
   </ItemGroup>
   <ItemGroup>
@@ -270,12 +270,8 @@
     <None Include="packages\Newtonsoft.Json.13.0.3\LICENSE.md" />
     <None Include="packages\Newtonsoft.Json.13.0.3\Newtonsoft.Json.13.0.3.nupkg" />
     <None Include="packages\Newtonsoft.Json.13.0.3\README.md" />
-    <None Include="README.md" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include=".gitattributes" />
-    <Content Include=".gitignore" />
-    <Content Include="Full Code.txt" />
     <Content Include="packages\Newtonsoft.Json.13.0.3\lib\net20\Newtonsoft.Json.dll" />
     <Content Include="packages\Newtonsoft.Json.13.0.3\lib\net20\Newtonsoft.Json.xml" />
     <Content Include="packages\Newtonsoft.Json.13.0.3\lib\net35\Newtonsoft.Json.dll" />
@@ -293,7 +289,6 @@
     <Content Include="packages\Newtonsoft.Json.13.0.3\lib\netstandard2.0\Newtonsoft.Json.dll" />
     <Content Include="packages\Newtonsoft.Json.13.0.3\lib\netstandard2.0\Newtonsoft.Json.xml" />
     <Content Include="packages\Newtonsoft.Json.13.0.3\packageIcon.png" />
-    <Content Include="Requests-Responses.txt" />
     <None Include="My Project\AppIcon.ico" />
     <Content Include="My Project\Logo.png" />
     <Content Include="obj\Debug\ProjectBlockchain.vbproj.FileListAbsolute.txt" />

@@ -41,9 +41,9 @@ Partial Class WalletBaseView
         Me.CreateWallet.BackColor = System.Drawing.Color.FromArgb(CType(CType(224, Byte), Integer), CType(CType(224, Byte), Integer), CType(CType(224, Byte), Integer))
         Me.CreateWallet.Font = New System.Drawing.Font("Bahnschrift Light", 10.0!)
         Me.CreateWallet.ForeColor = System.Drawing.Color.Goldenrod
-        Me.CreateWallet.Location = New System.Drawing.Point(187, 134)
+        Me.CreateWallet.Location = New System.Drawing.Point(211, 202)
         Me.CreateWallet.Name = "CreateWallet"
-        Me.CreateWallet.Size = New System.Drawing.Size(111, 101)
+        Me.CreateWallet.Size = New System.Drawing.Size(248, 88)
         Me.CreateWallet.TabIndex = 2
         Me.CreateWallet.Text = "GENERATE NEW WALLET"
         Me.CreateWallet.UseVisualStyleBackColor = False
@@ -53,9 +53,9 @@ Partial Class WalletBaseView
         Me.GetHelpManual.BackColor = System.Drawing.Color.FromArgb(CType(CType(128, Byte), Integer), CType(CType(64, Byte), Integer), CType(CType(64, Byte), Integer))
         Me.GetHelpManual.Font = New System.Drawing.Font("Bahnschrift Light", 12.0!)
         Me.GetHelpManual.ForeColor = System.Drawing.Color.Goldenrod
-        Me.GetHelpManual.Location = New System.Drawing.Point(10, 187)
+        Me.GetHelpManual.Location = New System.Drawing.Point(12, 202)
         Me.GetHelpManual.Name = "GetHelpManual"
-        Me.GetHelpManual.Size = New System.Drawing.Size(169, 48)
+        Me.GetHelpManual.Size = New System.Drawing.Size(193, 48)
         Me.GetHelpManual.TabIndex = 3
         Me.GetHelpManual.Text = "ABOUT THE WAYFARER SYSTEM"
         Me.GetHelpManual.UseVisualStyleBackColor = False
@@ -65,9 +65,9 @@ Partial Class WalletBaseView
         Me.TitleBar.BackColor = System.Drawing.Color.FromArgb(CType(CType(224, Byte), Integer), CType(CType(224, Byte), Integer), CType(CType(224, Byte), Integer))
         Me.TitleBar.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
         Me.TitleBar.Font = New System.Drawing.Font("Bahnschrift Light", 18.0!)
-        Me.TitleBar.Location = New System.Drawing.Point(187, 9)
+        Me.TitleBar.Location = New System.Drawing.Point(211, 12)
         Me.TitleBar.Name = "TitleBar"
-        Me.TitleBar.Size = New System.Drawing.Size(497, 67)
+        Me.TitleBar.Size = New System.Drawing.Size(502, 67)
         Me.TitleBar.TabIndex = 5
         Me.TitleBar.Text = "WALLET MANAGEMENT - LOGIN, GENERATE OR DELETE WALLET KEY-PAIRS"
         Me.TitleBar.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
@@ -77,9 +77,9 @@ Partial Class WalletBaseView
         Me.LoginWallet.BackColor = System.Drawing.Color.FromArgb(CType(CType(224, Byte), Integer), CType(CType(224, Byte), Integer), CType(CType(224, Byte), Integer))
         Me.LoginWallet.Font = New System.Drawing.Font("Bahnschrift Light", 10.0!)
         Me.LoginWallet.ForeColor = System.Drawing.Color.Goldenrod
-        Me.LoginWallet.Location = New System.Drawing.Point(317, 135)
+        Me.LoginWallet.Location = New System.Drawing.Point(211, 95)
         Me.LoginWallet.Name = "LoginWallet"
-        Me.LoginWallet.Size = New System.Drawing.Size(110, 100)
+        Me.LoginWallet.Size = New System.Drawing.Size(248, 88)
         Me.LoginWallet.TabIndex = 6
         Me.LoginWallet.Text = "LOG INTO EXISTING WALLET"
         Me.LoginWallet.UseVisualStyleBackColor = False
@@ -89,9 +89,9 @@ Partial Class WalletBaseView
         Me.StatusLbl.BackColor = System.Drawing.SystemColors.Control
         Me.StatusLbl.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
         Me.StatusLbl.Font = New System.Drawing.Font("Bahnschrift Light", 8.0!)
-        Me.StatusLbl.Location = New System.Drawing.Point(10, 242)
+        Me.StatusLbl.Location = New System.Drawing.Point(12, 255)
         Me.StatusLbl.Name = "StatusLbl"
-        Me.StatusLbl.Size = New System.Drawing.Size(169, 71)
+        Me.StatusLbl.Size = New System.Drawing.Size(193, 103)
         Me.StatusLbl.TabIndex = 18
         Me.StatusLbl.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
         '
@@ -100,9 +100,9 @@ Partial Class WalletBaseView
         Me.ViewWallets.BackColor = System.Drawing.Color.FromArgb(CType(CType(224, Byte), Integer), CType(CType(224, Byte), Integer), CType(CType(224, Byte), Integer))
         Me.ViewWallets.Font = New System.Drawing.Font("Bahnschrift Light", 10.0!)
         Me.ViewWallets.ForeColor = System.Drawing.Color.Goldenrod
-        Me.ViewWallets.Location = New System.Drawing.Point(447, 134)
+        Me.ViewWallets.Location = New System.Drawing.Point(465, 202)
         Me.ViewWallets.Name = "ViewWallets"
-        Me.ViewWallets.Size = New System.Drawing.Size(108, 101)
+        Me.ViewWallets.Size = New System.Drawing.Size(248, 88)
         Me.ViewWallets.TabIndex = 20
         Me.ViewWallets.Text = "VIEW EXISTING WALLETS"
         Me.ViewWallets.UseVisualStyleBackColor = False
@@ -112,9 +112,9 @@ Partial Class WalletBaseView
         Me.DeleteWallet.BackColor = System.Drawing.Color.FromArgb(CType(CType(224, Byte), Integer), CType(CType(224, Byte), Integer), CType(CType(224, Byte), Integer))
         Me.DeleteWallet.Font = New System.Drawing.Font("Bahnschrift Light", 10.0!)
         Me.DeleteWallet.ForeColor = System.Drawing.Color.Goldenrod
-        Me.DeleteWallet.Location = New System.Drawing.Point(572, 134)
+        Me.DeleteWallet.Location = New System.Drawing.Point(465, 95)
         Me.DeleteWallet.Name = "DeleteWallet"
-        Me.DeleteWallet.Size = New System.Drawing.Size(112, 100)
+        Me.DeleteWallet.Size = New System.Drawing.Size(248, 88)
         Me.DeleteWallet.TabIndex = 21
         Me.DeleteWallet.Text = "DELETE EXISTING WALLET"
         Me.DeleteWallet.UseVisualStyleBackColor = False
@@ -124,9 +124,9 @@ Partial Class WalletBaseView
         Me.Disconnect.BackColor = System.Drawing.Color.FromArgb(CType(CType(245, Byte), Integer), CType(CType(0, Byte), Integer), CType(CType(50, Byte), Integer))
         Me.Disconnect.Font = New System.Drawing.Font("Bahnschrift Light", 10.0!)
         Me.Disconnect.ForeColor = System.Drawing.Color.Goldenrod
-        Me.Disconnect.Location = New System.Drawing.Point(187, 244)
+        Me.Disconnect.Location = New System.Drawing.Point(211, 299)
         Me.Disconnect.Name = "Disconnect"
-        Me.Disconnect.Size = New System.Drawing.Size(368, 69)
+        Me.Disconnect.Size = New System.Drawing.Size(381, 59)
         Me.Disconnect.TabIndex = 17
         Me.Disconnect.Text = "DISCONNECT FROM WAYFARER SYSTEM"
         Me.Disconnect.UseVisualStyleBackColor = False
@@ -134,9 +134,9 @@ Partial Class WalletBaseView
         'PictureBox1
         '
         Me.PictureBox1.Image = Global.ProjectBlockchain.My.Resources.Resources.Logo
-        Me.PictureBox1.Location = New System.Drawing.Point(10, 10)
+        Me.PictureBox1.Location = New System.Drawing.Point(12, 12)
         Me.PictureBox1.Name = "PictureBox1"
-        Me.PictureBox1.Size = New System.Drawing.Size(169, 171)
+        Me.PictureBox1.Size = New System.Drawing.Size(193, 184)
         Me.PictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage
         Me.PictureBox1.TabIndex = 27
         Me.PictureBox1.TabStop = False
@@ -146,9 +146,9 @@ Partial Class WalletBaseView
         Me.BackBtn.BackColor = System.Drawing.Color.FromArgb(CType(CType(245, Byte), Integer), CType(CType(0, Byte), Integer), CType(CType(50, Byte), Integer))
         Me.BackBtn.Font = New System.Drawing.Font("Bahnschrift", 12.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.BackBtn.ForeColor = System.Drawing.Color.Goldenrod
-        Me.BackBtn.Location = New System.Drawing.Point(572, 244)
+        Me.BackBtn.Location = New System.Drawing.Point(601, 299)
         Me.BackBtn.Name = "BackBtn"
-        Me.BackBtn.Size = New System.Drawing.Size(112, 69)
+        Me.BackBtn.Size = New System.Drawing.Size(112, 59)
         Me.BackBtn.TabIndex = 33
         Me.BackBtn.Text = "BACK TO MENU"
         Me.BackBtn.UseVisualStyleBackColor = False
@@ -158,7 +158,7 @@ Partial Class WalletBaseView
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.BackColor = System.Drawing.Color.FromArgb(CType(CType(60, Byte), Integer), CType(CType(60, Byte), Integer), CType(CType(70, Byte), Integer))
-        Me.ClientSize = New System.Drawing.Size(696, 322)
+        Me.ClientSize = New System.Drawing.Size(737, 379)
         Me.Controls.Add(Me.BackBtn)
         Me.Controls.Add(Me.PictureBox1)
         Me.Controls.Add(Me.DeleteWallet)
