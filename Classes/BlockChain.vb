@@ -13,12 +13,16 @@ Public Class BlockChain
     Public ReadOnly Property Difficulty As Byte = 2 'Specifies limits for a hash - e.g. 6 trailing 0's in the hash (higher = more difficult to mine)
     'will pull this out to be a global const to allow all processes to use it by reference and not hardcoding it in all code manually
     Private Property Chain As List(Of Block) 'underlying list of blocks in the blockchain
-    Public Function GetChain() As List(Of Block)
-        Return Chain
-    End Function 'getter for the chain
-    Public Function GetLastBlock() As Block
-        Return Chain.Last() 'returns the last block on the chain
-    End Function
+    Public ReadOnly Property GetChain As List(Of Block)
+        Get
+            Return Chain
+        End Get
+    End Property 'getter for the chain
+    Public ReadOnly Property GetLastBlock As Block
+        Get
+            Return Chain.Last() 'returns the last block on the chain
+        End Get
+    End Property
 
     Public Function IsValidChain() As Boolean 'validates the chain to check if all blocks and their relations are valid by common rules and definitions
         For I As Integer = 1 To Chain.Count - 1 'starts at 1 as block 0 is always correct and can take for granted

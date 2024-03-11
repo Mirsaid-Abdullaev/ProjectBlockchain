@@ -3,40 +3,54 @@ Imports System.IO
 Imports System.Text.RegularExpressions
 Public Class Block
     Private ReadOnly Property Index As UInteger 'index of current block
-    Public Function GetIndex() As UInteger
-        Return Index
-    End Function
+    Public ReadOnly Property GetIndex As UInteger
+        Get
+            Return Index
+        End Get
+    End Property
     Private Property Nonce As UInteger 'value linked to difficulty - higher difficulty = higher nonce = higher compute per block
-    Public Function GetNonce() As UInteger
-        Return Nonce
-    End Function
+    Public ReadOnly Property GetNonce As UInteger
+        Get
+            Return Nonce
+        End Get
+    End Property
 
     Private Property Transactions As List(Of Transaction) 'store of transactions in current block
-    Public Function GetTransactionList() As List(Of Transaction)
-        Return Transactions
-    End Function
+    Public ReadOnly Property GetTransactionList As List(Of Transaction)
+        Get
+            Return Transactions
+        End Get
+    End Property
 
     Private Property Hash As String 'hash of current block
-    Public Function GetHash() As String
-        Return Hash
-    End Function
+    Public ReadOnly Property GetHash As String
+        Get
+            Return Hash
+        End Get
+    End Property
 
     Private Property PrevHash As String 'hash of previous block
-    Public Function GetPrevHash() As String
-        Return PrevHash
-    End Function
+    Public ReadOnly Property GetPrevHash As UInteger
+        Get
+            Return PrevHash
+        End Get
+    End Property
 
 
     Private Property Timestamp As String = Nothing 'timestamp of block's mining
-    Public Function GetTimestamp() As String
-        Return Timestamp
-    End Function
+    Public ReadOnly Property GetTimestamp As String
+        Get
+            Return Timestamp
+        End Get
+    End Property
 
 
     Private Property Miner As String 'public address of miner wallet
-    Public Function GetMiner() As String
-        Return Miner
-    End Function
+    Public ReadOnly Property GetMiner As String
+        Get
+            Return Miner
+        End Get
+    End Property
 
     Public Function GetBlockDataForMining() As String 'returns the string version of the block data used in the mining thread
         Dim Result As String = String.Join(vbLf, {$"Block: {Index}", $"Previous hash: {PrevHash}", $"Nonce: {Nonce}", $"Transactions: {GetTransactionListAsString(Transactions)}", $"Timestamp: {Timestamp}", $"Miner: {Miner}"})
@@ -63,7 +77,7 @@ Public Class Block
 
     Private Sub HashUntilDifficulty(Difficulty As Byte)
         Dim DifficultyString As String = StrDup(Difficulty, "0") 'gets the success condition data
-        While Mid(Hash, 1, Difficulty) <> DifficultyString 'keeps retrying another hash while the prepending difficulty characters are not all 0
+        While Mid(Hash, 1, Difficulty) <> DifficultyString And Not StopMining 'keeps retrying another hash while the prepending difficulty characters are not all 0
             Nonce += 1 'increment nonce and rehash
             Dim DataToHash As String = GetBlockDataForMining()
             Hash = GetSHA256FromString(DataToHash)
@@ -184,7 +198,7 @@ Module BlockOperations
             End Select
         Next
         ParsedBlock = New Block(BlockComps(4), BlockComps(1), BlockComps(0), BlockComps(2), BlockComps(5), GetTransactionListFromString(BlockComps(3)), BlockComps(6)) 'makes a block instance
-        If IsValidBlock(ParsedBlock, WFBlockchain.GetLastBlock) Then 'checks whether the parsed block is valid compared to the last block on the blockchain
+        If IsValidNextBlock(ParsedBlock, WFBlockchain.GetLastBlock) Then 'checks whether the parsed block is valid compared to the last block on the blockchain
             Return ParsedBlock
         Else
             GoTo ErrorCondition 'otherwise go to error condition
@@ -199,12 +213,12 @@ ErrorCondition: CustomMsgBox.ShowBox($"Block file ""{FilePath}"" seems to be cor
             Exit Sub 'checks if the block to be saved exists, and if it exactly the same as the block to be saved - overwritten if not the same, otherwise exited
         End If
         Using SW As New StreamWriter(FilePath, False) 'sets up the writer so that it overwrites anything in the existing file if there is one
-            SW.WriteLine($"Block: {Block.GetIndex()}")
-            SW.WriteLine($"Previous hash: {Block.GetPrevHash()}")
+            SW.WriteLine($"Block: {Block.GetIndex}")
+            SW.WriteLine($"Previous hash: {Block.GetPrevHash}")
             SW.WriteLine($"Nonce: {Block.GetNonce}")
             SW.WriteLine("Transactions: " & GetTransactionListAsString(Block.GetTransactionList))
-            SW.WriteLine($"Hash: {Block.GetHash()}")
-            SW.WriteLine($"Timestamp: {Block.GetTimestamp()}")
+            SW.WriteLine($"Hash: {Block.GetHash}")
+            SW.WriteLine($"Timestamp: {Block.GetTimestamp}")
             SW.Write($"Miner: {Block.GetMiner}")
             'this is the block format, as described in the above sub as well
         End Using
@@ -215,7 +229,13 @@ ErrorCondition: CustomMsgBox.ShowBox($"Block file ""{FilePath}"" seems to be cor
         Return Regex.IsMatch(FilePath, Pattern)
     End Function
 
-    Public Function IsValidBlock(Block As Block, PrevBlock As Block) As Boolean
-        Return GetSHA256FromString(Block.GetBlockDataForMining) = Block.GetHash AndAlso Block.GetPrevHash = PrevBlock.GetHash AndAlso CULng(Block.GetTimestamp) >= CULng(PrevBlock.GetTimestamp) AndAlso IsValidHexStr(Block.GetHash, 64) AndAlso IsValidHexStr(Block.GetPrevHash, 64) AndAlso IsValidHexStr(Block.GetMiner, 64)
+    Public Function IsValidNextBlock(Block As Block, PrevBlock As Block) As Boolean
+        Return GetSHA256FromString(Block.GetBlockDataForMining()) = Block.GetHash _
+               AndAlso Block.GetPrevHash = PrevBlock.GetHash _
+               AndAlso CULng(Block.GetTimestamp) >= CULng(PrevBlock.GetTimestamp) _
+               AndAlso IsValidHexStr(Block.GetHash, 64) _
+               AndAlso IsValidHexStr(Block.GetPrevHash, 64) _
+               AndAlso IsValidHexStr(Block.GetMiner, 64) _
+               AndAlso Block.GetIndex = PrevBlock.GetIndex + 1
     End Function
 End Module

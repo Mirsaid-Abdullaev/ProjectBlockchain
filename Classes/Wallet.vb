@@ -84,7 +84,7 @@ Module WalletOperations
     Public Function GetTemporaryBalanceUpdate(PublicAddress As String) As Double 'returns the future change in balance after the current block is mined
         Dim BalanceChange As Double = 0
         If WFTransactionPool.GetPoolSize > 0 Then 'checking current transaction pool for any transactions sent by the device to avoid negative intermediate balances
-            Dim TransactPool As List(Of Transaction) = WFTransactionPool.GetTransactionList.GetRange(0, If(MAX_TRANSACT_SIZE > WFTransactionPool.GetTransactionList.Count, WFTransactionPool.GetTransactionList.Count, MAX_TRANSACT_SIZE)) 'getting only the next mining block range
+            Dim TransactPool As List(Of Transaction) = WFTransactionPool.GetTransactionList()
             For Each Transact As Transaction In TransactPool
                 If Not (Transact.Sender = PublicAddress Or Transact.Recipient = PublicAddress) Then
                     Continue For
@@ -101,6 +101,9 @@ Module WalletOperations
         Return BalanceChange
     End Function
 End Module
+
+
+
 Public Class Wallet
     Private ReadOnly WalletName As String 'a basic identifier, used for accessing the file path of the wallet
     Private ReadOnly PublicAddress As String 'the address that can be used to send cryptocurrency to a given wallet

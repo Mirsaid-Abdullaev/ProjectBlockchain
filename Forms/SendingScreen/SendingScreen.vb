@@ -16,6 +16,7 @@
     Private Sub SendingScreen_Load(sender As Object, e As EventArgs) Handles MyBase.Load
         DesignLoad(Me, SendingScreenColours)
         Me.StatusLbl.Text = StatusLblText
+        Me.TransactionStatus.Text = If(UnvalidatedTransaction Is Nothing, "No pending transactions, clear to send.", $"Currently 1 pending transaction: {UnvalidatedTransaction}")
     End Sub
 
     Private Sub CheckConfirm_Click(sender As Object, e As EventArgs) Handles CheckConfirm.Click
@@ -55,6 +56,7 @@
         TextBox2.Clear()
         SendingAmount = Nothing
         Recipient = Nothing
+        Me.TransactionStatus.Text = If(UnvalidatedTransaction Is Nothing, "No pending transactions, clear to send.", $"Currently 1 pending transaction: {UnvalidatedTransaction}")
     End Sub
 
     Private Sub SendTransaction(Transact As Transaction)
@@ -63,8 +65,20 @@
             CustomMsgBox.ShowBox("Error: device is not connected to the network or mining is taking place, unable to send this transaction to the network. Try again - transaction processing aborted, no charge taken.", "ERROR", False)
             Exit Sub
         End If
+        If UnvalidatedTransaction IsNot Nothing Then
+            'theres already a transaction being sent across, wait
+            CustomMsgBox.ShowBox("Error: another transaction is waiting for confirmations. Try again later - transaction processing aborted, no charge taken.", "ERROR", False)
+            Exit Sub
+        End If
         OutboundJSONBuffer.Enqueue(NewTransReq.GetJSONMessage()) 'sending to both nodes whichever are connected (e.g. roots and leaves have no prev and next tcp)
+        UnvalidatedTransaction = Transact
+        ReceivedTransactionConfirmations = 0
+        If IS_ROOT OrElse IsLeaf Then
+            'has no prevptr/nextptr so can add one confirmation already
+            ReceivedTransactionConfirmations = 1
+        End If
         CustomMsgBox.ShowBox($"Transaction has been successfully sent to the outbound buffer. Details: {Transact}", "SUCCESSFUL TRANSACT", False)
+        Me.TransactionStatus.Text = If(UnvalidatedTransaction Is Nothing, "No pending transactions, clear to send.", $"Currently 1 pending transaction: {UnvalidatedTransaction}")
     End Sub
 
     Private Sub AddressInput_Click(sender As Object, e As EventArgs) Handles AddressInput.Click

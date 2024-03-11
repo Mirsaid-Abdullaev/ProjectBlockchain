@@ -19,8 +19,8 @@ Module AppGlobals
     Public PrevTCP As TCPHandler = Nothing 'for prev device comms via tcp - described in the TCPHandler.vb class definition, model, and Design stage of project
     Public NextTCP As TCPHandler = Nothing 'for next device comms
     Public WFRootHandler As RootHandler = Nothing 'for root comms between root and device - this one used only if device is a root
+    Public WFRootHandlerClient As RootHandlerClient = Nothing
     'Public WFRootReceiver As RootReceiver = Nothing 'this will need to be implemented as well to handle the client side of root comms
-
 
     Public IS_ROOT As Boolean = False 'boolean to store if device is a root
     Public ROOT_IP As String = "" 'stores the ip address of root node
@@ -31,7 +31,6 @@ Module AppGlobals
 
     Public StatusLblText As String = SetSharedLblText("Offline", "No wallet logged in", "No wallet logged in") 'holds label text across all forms, using the set function makes a custom formatted string
 
-    Public CurrentBlockTransactionList As List(Of Transaction) 'current block's transaction pool - live transaction pool for the new block to be mined
     Public WFTransactionPool As TransactionPool 'overflow transaction pool for the main pool, to allow for new transactions during mining to be sent and held above the MAX_TRANSACT_SIZE limitation of the previous list
     Public Const MAX_TRANSACT_SIZE As Byte = 30 'max transaction pool size to start mining sequence - this could be higher or lower based on network activity, for testing, cant be too high or too low (waste of time)
 
@@ -39,18 +38,23 @@ Module AppGlobals
     'PROGRAM FLAGS
     '
     Public IsMining As Boolean = False 'flag for stopping threads and controlling program flow
+    Public StopMining As Boolean = False 'flag to stop mining taking place
     Public IsSynchronised As Boolean = False 'overall program sychronised flag
     Public IsLeaf As Boolean = False 'flag for connection request thread
     Public AppRunning As Boolean = True 'flag for saying whether user is in application - gets flipped if user clicks "Disconnect" button on any form
     Public IsMiner As Boolean = False 'flag for checking whether device is a miner or not, used for determining what proc to take during validation
-    '
-    '
-    '
-
     Public ReachedMiningSeq As Boolean = False 'flag to direct program and control what is allowed to take place while mining
+    '
+    'PROGRAM FLAGS
+    '
+    Public CurrentBlock As Block = Nothing 'to store block instance that will be mined from the transaction pool
+    Public ReceivedBlockConfirmations As Byte = 0 ' checking for node validations
 
     Public InboundJSONBuffer As New DataBufferQueue(Of String) 'max size 200 by default, for storing data that has come in from tcphandlers
     Public OutboundJSONBuffer As New DataBufferQueue(Of String)
+    Public UnvalidatedTransaction As Transaction 'used to hold transaction temporarily until newtransresp received from both devices
+    Public ReceivedTransactionConfirmations As Byte = 0 'flags to switch on when received confirmations
+
 
     Public ReceivedBlocks As List(Of Tuple(Of UInteger, Block)) 'received blocks from sync process, will move them to be a local variable in synchronisation.vb file later
 
@@ -97,8 +101,10 @@ Module AppGlobals
                 'at this point we have the orign ip and the data in json format with the correct appidmsg - can start processing
                 Select Case JsonObject("MessageType")
 
-                    Case "NewTransactionRequest" 'this is done
+                    Case "NewTransactionRequest" 'done
                         Dim NewTransReq As NewTransactionRequest
+                        Dim NewTransResp As NewTransactionResponse
+
                         Try
                             NewTransReq = JsonConvert.DeserializeObject(Of NewTransactionRequest)(Data)
                             If Not IsValidHexStr(NewTransReq.Sender, 64) Or Not IsValidHexStr(NewTransReq.Recipient, 64) Then
@@ -106,136 +112,255 @@ Module AppGlobals
                             End If
                             'checking balance validity
                             Dim TempBalance As Double = ScanBlockBalanceUpdate(NewTransReq.Sender) + GetTemporaryBalanceUpdate(NewTransReq.Sender)
+                            'alongside checking current real balance, also checks for any transactions that have been sent in the time since last block was mined, i.e. unconfirmed transacts
                             If TempBalance < NewTransReq.Quantity + NewTransReq.Fee Then
-                                Throw New Exception 'sender has insufficient funds to process this transaction, send
+                                Throw New Exception 'sender has insufficient funds to process this transaction, send a false response to discard transaction
                             End If
-
+                            If Not IsValidTimestamp(NewTransReq.Timestamp) Then
+                                Throw New Exception 'timestamp not in the correct form
+                            End If
                         Catch ex As Exception 'you ended up here because the transaction is invalid for some reason
                             CustomMsgBox.ShowBox($"Error in RecvQueue thread: {ex.Message}. Data that threw error: {Data}", "ERROR", False)
-                            Dim NewTransResp As New NewTransactionResponse(False) 'this will only go back to original sending device, as the newtransreq will not be redistributed
+                            NewTransResp = New NewTransactionResponse(False) 'this will only go back to original sending device, as the newtransreq will not be redistributed
                             ReturnToSender(NewTransResp.GetJSONMessage, DeviceIP)
                             Continue While
                         End Try
 
                         'transaction is OK at this point, can continue processing
                         Dim Transact As New Transaction(NewTransReq.Sender, NewTransReq.Recipient, NewTransReq.Quantity, NewTransReq.Fee, NewTransReq.Timestamp)
-                        If CurrentBlockTransactionList.Count >= MAX_TRANSACT_SIZE Then
-                            WFTransactionPool.AddTransaction(Transact)
-                        Else
-                            CurrentBlockTransactionList.Add(Transact)
+
+                        If WFTransactionPool.GetPoolSize >= MAX_TRANSACT_SIZE OrElse IsMining Then 'pool is full - cannot accept transaction
+                            NewTransResp = New NewTransactionResponse(False)
+                        Else 'enough space to add new transaction, add to list
+                            NewTransResp = New NewTransactionResponse(True)
                         End If
-                        Dim TransmitTrans As New TransmitTransactionRequest(Transact) 'resets request so that the device IP is now this device's ip
-                        SendDataAlong(TransmitTrans.GetJSONMessage, DeviceIP)
+                        ReturnToSender(NewTransResp.GetJSONMessage, DeviceIP)
 
-
-                    Case "TransmitTransactionRequest"
+                    Case "TransmitTransactionRequest" 'done
                         Dim TransmitTransReq As TransmitTransactionRequest
+                        Dim Transact As Transaction
                         Try
                             TransmitTransReq = JsonConvert.DeserializeObject(Of TransmitTransactionRequest)(Data)
-
+                            Transact = New Transaction(TransmitTransReq.Sender, TransmitTransReq.Recipient, TransmitTransReq.Quantity, TransmitTransReq.Fee, TransmitTransReq.Timestamp)
                         Catch ex As Exception
+                            CustomMsgBox.ShowBox($"Error in RecvQueue thread: {ex.Message}. Data that threw error: {Data}", "ERROR", False)
+                            Continue While
+                        End Try
+                        SendDataAlong(TransmitTransReq.GetJSONMessage, DeviceIP)
+                        WFTransactionPool.AddTransaction(Transact) 'this works because the newtransrequest has been validated by the previous devices
+                        Continue While
 
+                    Case "TransmitNewBlockRequest" 'done
+                        Dim TransmitNewBlkReq As TransmitNewBlockRequest
+                        Dim RecvBlock As Block
+                        Try
+                            TransmitNewBlkReq = JsonConvert.DeserializeObject(Of TransmitNewBlockRequest)(Data)
+                        Catch ex As Exception
+                            CustomMsgBox.ShowBox($"Error in RecvQueue thread: {ex.Message}.", "ERROR", False)
+                            Continue While 'request not in correct json format, we can just exit
+                        End Try
+                        'assumption here is that this request will always have valid data and blocks - accepted limitation
+                        RecvBlock = New Block(TransmitNewBlkReq.Hash,
+                                              TransmitNewBlkReq.PrevHash,
+                                              TransmitNewBlkReq.Index,
+                                              TransmitNewBlkReq.Nonce,
+                                              TransmitNewBlkReq.Timestamp,
+                                              GetTransactionListFromString(TransmitNewBlkReq.Transactions),
+                                              TransmitNewBlkReq.Miner)
+                        ReachedMiningSeq = False
+                        Dim TransmitBlkReq As New TransmitNewBlockRequest(RecvBlock) 'send the block along the network
+                        SendDataAlong(TransmitBlkReq.GetJSONMessage, DeviceIP)
+                        WFBlockchain.AddBlock(RecvBlock) 'add received block to the chain
+
+                    Case "NewTransactionResponse" 'done
+                        Dim NewTransResp As NewTransactionResponse
+                        Try
+                            NewTransResp = JsonConvert.DeserializeObject(Of NewTransactionResponse)(Data)
+                        Catch ex As Exception
+                            CustomMsgBox.ShowBox($"Error in RecvQueue thread: {ex.Message}. Transaction that you tried to send has failed validation. Please try again. Transaction details: {UnvalidatedTransaction}", "ERROR", False)
+                            UnvalidatedTransaction = Nothing
+                            ReceivedTransactionConfirmations = 0
+                            Continue While
                         End Try
 
+                        If NewTransResp.Status = "Accept" Then
+                            'received another confirmation
+                            If ReceivedTransactionConfirmations = 0 Then
+                                ReceivedTransactionConfirmations = 1
+                            ElseIf ReceivedTransactionConfirmations = 1 Then 'one received already, so both received now
+                                ReceivedTransactionConfirmations = 0
+                                UnvalidatedTransaction = Nothing
+                                Dim TransmitTransReq As New TransmitTransactionRequest(UnvalidatedTransaction)
+                                SendToBothNodes(TransmitTransReq.GetJSONMessage) 'now clear to distribute to both devices
+                                'transaction accepted fully, so add to own transact pool
+                                WFTransactionPool.AddTransaction(UnvalidatedTransaction)
+                            End If
+                        Else 'not accepted, so discard transact
+                            ReceivedTransactionConfirmations = 0
+                            CustomMsgBox.ShowBox($"Error: Transaction that you tried to send has failed validation. Please try again. Transaction details: {UnvalidatedTransaction}", "ERROR", False)
+                            UnvalidatedTransaction = Nothing
+                        End If
+
+                    Case "ValidateNewMinedBlockResponse"
+                        Dim VNMBRp As ValidateNewMinedBlockResponse
+                        Try
+                            VNMBRp = JsonConvert.DeserializeObject(Of ValidateNewMinedBlockResponse)(Data)
+                        Catch ex As Exception
+                            CustomMsgBox.ShowBox($"Error in RecvQueue thread: {ex.Message}. Mining failed and stopped.", "ERROR", False)
+                            StopMining = True
+                            CurrentBlock = Nothing
+                            ReceivedBlockConfirmations = 0
+                            Continue While 'request not in correct json format, we can just exit
+                        End Try
+                        If VNMBRp.Status = "Accept" Then
+                            If ReceivedBlockConfirmations = 0 Then
+                                ReceivedBlockConfirmations = 1
+                            ElseIf ReceivedBlockConfirmations = 1 Then
+                                ReceivedBlockConfirmations = 0 'both validated the block, can distribute and add the block to the chain
+                                StopMining = True
+                                ReachedMiningSeq = False
+                                Dim TransmitNewBlkReq As New TransmitNewBlockRequest(CurrentBlock)
+                                SendToBothNodes(TransmitNewBlkReq.GetJSONMessage)
+                                WFBlockchain.AddBlock(CurrentBlock)
+                                Thread.Sleep(250)
+                                StopMining = False 'to reset the variable but make sure the hashing gets kicked off first
+                            End If
+                        Else 'not accepted
+                            StopMining = True 'messed up, wait for the new block from someone else
+                            CurrentBlock = Nothing
+                            ReceivedBlockConfirmations = 0
+                            Thread.Sleep(250)
+                            StopMining = False 'to reset the variable but make sure the hashing gets kicked off first
+                            'reachedminingseq is still true until block is received
+                        End If
 
 
 
 
 
-                    Case "ValidateNewMinedBlockRequest"
+
+
+
+
+
+
+
+
+
+
+
+
+                    Case "ValidateNewMinedBlockRequest" 'work in progress
 
                         Dim VNMBRq As ValidateNewMinedBlockRequest
-                        Dim VNMBRs As ValidateNewMinedBlockResponse
+                        Dim VNMBRp As ValidateNewMinedBlockResponse
 
                         Try
                             VNMBRq = JsonConvert.DeserializeObject(Of ValidateNewMinedBlockRequest)(Data)
                         Catch ex As Exception
                             CustomMsgBox.ShowBox($"Error in RecvQueue thread: {ex.Message}. Sent back false message", "ERROR", False)
-                            VNMBRs = New ValidateNewMinedBlockResponse(False)
-                            ReturnToSender(VNMBRs.GetJSONMessage, DeviceIP)
+                            VNMBRp = New ValidateNewMinedBlockResponse(False)
+                            ReturnToSender(VNMBRp.GetJSONMessage, DeviceIP)
                             Continue While 'request not in correct json format, we can just exit
                         End Try
                         'at this point all block data is at least not erroneous
 
                         If VNMBRq.Index <> WFBlockchain.GetLastBlock.GetIndex + 1 Then
                             CustomMsgBox.ShowBox($"Error in RecvQueue thread: Index of block is wrong - rogue block. Sent back false message", "ERROR", False)
-                            VNMBRs = New ValidateNewMinedBlockResponse(False)
-                            ReturnToSender(VNMBRs.GetJSONMessage, DeviceIP)
-                            Continue While 'request not in correct json format, we can just exit
+                            VNMBRp = New ValidateNewMinedBlockResponse(False)
+                            ReturnToSender(VNMBRp.GetJSONMessage, DeviceIP)
+                            Continue While 'incorrect index, continue
                         End If
                         'index is ok
 
                         If VNMBRq.Hash.Substring(0, WFBlockchain.Difficulty) <> StrDup(WFBlockchain.Difficulty, "0") Then
                             CustomMsgBox.ShowBox($"Error in RecvQueue thread: hash received is invalid. Sent back false message", "ERROR", False)
-                            VNMBRs = New ValidateNewMinedBlockResponse(False)
-                            ReturnToSender(VNMBRs.GetJSONMessage, DeviceIP)
-                            Continue While 'request not in correct json format, we can just exit
+                            VNMBRp = New ValidateNewMinedBlockResponse(False)
+                            ReturnToSender(VNMBRp.GetJSONMessage, DeviceIP)
+                            Continue While 'incorrect hash format, continue
                         End If
-                        'hash is ok
+                        'hash is ok - complies with difficulty
 
                         Try
                             Dim TransactList As List(Of Transaction) = GetTransactionListFromString(VNMBRq.Transactions)
-                            Dim CurrTransList As List(Of Transaction) = CurrentBlockTransactionList
-                            If Not CurrTransList.Count = TransactList.Count Then
+                            Dim TransactionPool As List(Of Transaction) = WFTransactionPool.GetTransactionList()
+                            If Not TransactionPool.Count = TransactList.Count Then
                                 Throw New Exception 'cant be referring to the same transaction pool
                             End If
                             If TransactList.Count = 0 Then
-                                Exit Try 'this is ok because the other list also has 0
+                                Exit Try 'this is ok because the other list also has 0, so no need to filter through each transact
                             End If
                             For Each Transact As Transaction In TransactList
-                                If Not CurrTransList.Contains(Transact) OrElse CUInt(Transact.Timestamp) < CUInt(WFBlockchain.GetLastBlock.GetTimestamp) Then 'OrElse Then
-                                    Throw New Exception
+                                If Not TransactionPool.Contains(Transact) Then
+                                    Throw New Exception 'checks whether every transaction is in the current transaction pool before proceeding
                                 End If
                             Next
                         Catch ex As Exception
                             CustomMsgBox.ShowBox($"Error in RecvQueue thread: Transaction list received doesn't match current pool. Sent back false message", "ERROR", False)
-                            VNMBRs = New ValidateNewMinedBlockResponse(False)
-                            ReturnToSender(VNMBRs.GetJSONMessage, DeviceIP)
-                            Continue While 'request not in correct json format, we can just exit
+                            VNMBRp = New ValidateNewMinedBlockResponse(False)
+                            ReturnToSender(VNMBRp.GetJSONMessage, DeviceIP)
+                            Continue While
                         End Try
+                        'transaction list is ok
 
+                        If Not IsValidHexStr(VNMBRq.Hash, 64) OrElse Not IsValidHexStr(VNMBRq.PrevHash, 64) OrElse Not IsValidHexStr(VNMBRq.Miner, 64) Then
+                            'data has hashes in the wrong format - need to be 64-digit hex strings with uppercase only
+                            CustomMsgBox.ShowBox($"Error in RecvQueue thread: Block has invalid hex strings. Sent back false message", "ERROR", False)
+                            VNMBRp = New ValidateNewMinedBlockResponse(False)
+                            ReturnToSender(VNMBRp.GetJSONMessage, DeviceIP)
+                            Continue While
+                        End If
+                        'hex strings validated
+
+                        If Not IsValidTimestamp(VNMBRq.Timestamp) Then
+                            CustomMsgBox.ShowBox($"Error in RecvQueue thread: Block has invalid timestamp. Sent back false message", "ERROR", False)
+                            VNMBRp = New ValidateNewMinedBlockResponse(False)
+                            ReturnToSender(VNMBRp.GetJSONMessage, DeviceIP)
+                            Continue While
+                        End If
+                        'timestamp valid
                         Dim TempBlock As Block
                         Try
                             TempBlock = New Block(VNMBRq.Hash, VNMBRq.PrevHash, VNMBRq.Index, VNMBRq.Nonce, VNMBRq.Timestamp, GetTransactionListFromString(VNMBRq.Transactions), VNMBRq.Miner)
                         Catch ex As Exception
                             CustomMsgBox.ShowBox($"Error in RecvQueue: Validating new block failed - converting to block failed. Sent back false response", "ERROR", False)
-                            VNMBRs = New ValidateNewMinedBlockResponse(False)
-                            ReturnToSender(VNMBRs.GetJSONMessage, DeviceIP)
+                            VNMBRp = New ValidateNewMinedBlockResponse(False)
+                            ReturnToSender(VNMBRp.GetJSONMessage, DeviceIP)
                             Continue While
                         End Try
 
 
-                        If IsValidBlock(TempBlock, WFBlockchain.GetLastBlock) Then 'well done recruit, you passed the first stage
-                            Try
-                                Dim NodeIP As IPAddress = IPAddress.Parse(VNMBRq.DeviceIP)
-                                If PrevTCP IsNot Nothing AndAlso IPAddress.Equals(PrevTCP.DeviceIP, NodeIP) Then
-                                    Dim VNMBRp As New ValidateNewMinedBlockResponse("Accept")
-                                    PrevTCP.SendData(VNMBRp.GetJSONMessage())
-                                    Continue While 'thats it folks
-                                End If
-
-                                If NextTCP IsNot Nothing AndAlso IPAddress.Equals(NextTCP.DeviceIP, NodeIP) Then
-                                    Dim VNMBRp As New ValidateNewMinedBlockResponse("Accept")
-                                    NextTCP.SendData(VNMBRp.GetJSONMessage())
-                                    Continue While 'thats it folks
-                                End If
-                            Catch ex As Exception
-                                CustomMsgBox.ShowBox($"Error in RecvQueue thread: {ex.Message}", "ERROR", False)
-                                Continue While
-                            End Try
-                        Else 'cheeky node tried to chuck an invalid block
-
+                        If IsValidNextBlock(TempBlock, WFBlockchain.GetLastBlock) Then 'checks whether this block is correct against the current chain
+                            VNMBRp = New ValidateNewMinedBlockResponse(True)
+                            ReturnToSender(VNMBRp.GetJSONMessage, DeviceIP)
+                        Else 'block invalid
+                            VNMBRp = New ValidateNewMinedBlockResponse(False)
+                            ReturnToSender(VNMBRp.GetJSONMessage, DeviceIP)
+                            Continue While
                         End If
+                        'now need to stop mining and send response to origin miner
+                        ReachedMiningSeq = False
+                        StopMining = True
+                        CurrentBlock = Nothing
+                        ReceivedBlockConfirmations = 0
+
+                        VNMBRp = New ValidateNewMinedBlockResponse(True)
+                        ReturnToSender(VNMBRp.GetJSONMessage, DeviceIP)
 
 
 
 
-                    Case "TransmitNewBlockRequest"
-                    Case "NewTransactionResponse"
-                    Case "ValidateNewMinedBlockResponse"
+
+
+
+
+
+
+
 
                     Case "DisconnectRequest"
-                    Case "NewTransactionResponse"
+                    Case "BlockResponse"
+                        'not sure if i need this still
                     Case Else
                         Continue While 'received messagetype is invalid
                 End Select
@@ -248,22 +373,13 @@ Module AppGlobals
     Private Sub MonitorSndQueue() 'queue used only for tcp-handled data
         While AppRunning
             If IsSynchronised AndAlso Not OutboundJSONBuffer.IsEmpty AndAlso Not (PrevTCP Is Nothing AndAlso NextTCP Is Nothing) Then 'NAND of the two tcp handlers
-                'send things out of it one by one to both tcp connections and handle null exceptions using trycatch
+                'send things out of it one by one to both tcp connections and handle null exceptions
                 Dim Data As String = OutboundJSONBuffer.Dequeue
-                If PrevTCP IsNot Nothing Then
-                    Try
-                        PrevTCP.SendData(Data)
-                    Catch ex As Exception
-                        CustomMsgBox.ShowBox($"Error in SendQueue thread: {ex.Message}", "ERROR", False)
-                    End Try
-                End If
-                If NextTCP IsNot Nothing Then
-                    Try
-                        NextTCP.SendData(Data)
-                    Catch ex As Exception
-                        CustomMsgBox.ShowBox($"Error in SendQueue thread: {ex.Message}", "ERROR", False)
-                    End Try
-                End If
+                Try
+                    SendToBothNodes(Data)
+                Catch ex As Exception
+                    CustomMsgBox.ShowBox($"Error in SendQueue thread: {ex.Message}", "ERROR", False)
+                End Try
             End If
         End While
     End Sub
@@ -285,8 +401,18 @@ Module AppGlobals
             NextTCP?.SendData(Data)
             Exit Sub
         End If
-        If NextTCP IsNot Nothing AndAlso Equals(NextTCP.DeviceIP, Data) Then
+        If NextTCP IsNot Nothing AndAlso Equals(NextTCP.DeviceIP, OriginIP) Then
             'mustve come from nextptr device - send data to prevptr node
+            PrevTCP?.SendData(Data)
+        End If
+    End Sub
+
+    Public Sub SendToBothNodes(Data As String)
+        'sub is used to simplify sending data on to both connected nodes (if they exist)
+        If NextTCP IsNot Nothing Then
+            NextTCP?.SendData(Data)
+        End If
+        If PrevTCP IsNot Nothing Then
             PrevTCP?.SendData(Data)
         End If
     End Sub
@@ -346,6 +472,12 @@ Module AppGlobals
         End If
         'matches a hex string and optional length requirement
         Return Regex.IsMatch(Data, Pattern) AndAlso Data.Length = Length
+    End Function
+    Public Function IsValidTimestamp(Timestamp As String) As Boolean
+        Dim Pattern As String = "^[0-9]+&"
+        'app unix timestamps are millisecond-inclusive and have 13+ digits
+        'timestamps obviously use decimal, so checking for that too
+        Return Not Timestamp.Length = 13 OrElse Regex.IsMatch(Timestamp, Pattern)
     End Function
 
 

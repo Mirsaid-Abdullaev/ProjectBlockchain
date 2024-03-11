@@ -17,8 +17,8 @@ Public Class RootHandler 'doesnt need a destructor or destructor-handling variab
     Private NodeQueue As DataBufferQueue(Of String) 'queue of devices to synchronise (shouldnt be required as the connection process is linear but just in case)
     Public Sub New()
         UDPReceiver = New UdpClient(RootEP) With {.EnableBroadcast = False}
-        RootListenThread = New Thread(AddressOf ListenForSync) 'root taking requests
-        ResponseManagementThread = New Thread(AddressOf CheckDeviceQueue)
+        RootListenThread = New Thread(AddressOf ListenForSync) With {.IsBackground = True} 'root taking requests
+        ResponseManagementThread = New Thread(AddressOf CheckDeviceQueue) With {.IsBackground = True} 'root responses to the found devices
     End Sub
 
     Public Sub Start()
@@ -43,7 +43,6 @@ Public Class RootHandler 'doesnt need a destructor or destructor-handling variab
 
     Private Sub SendChainData(DeviceIP As String, StartIndex As UInteger) 'this should be called from the thread when a new device registers
         'send blocks here one by one in the specified range
-
         Dim Node As IPAddress
         Try
             Node = IPAddress.Parse(DeviceIP)
@@ -68,6 +67,7 @@ Public Class RootHandler 'doesnt need a destructor or destructor-handling variab
             UDPSender.Send(SndBytes, SndBytes.Length)
         Next
         'send transaction pool here too
+        'Dim TransactPoolResponse As New TransactionPoolResponse("Accepted")
         UDPSender.Close()
 
     End Sub

@@ -36,6 +36,7 @@ Partial Class SendingScreen
         Me.AmountInput = New System.Windows.Forms.Button()
         Me.TextBox1 = New System.Windows.Forms.TextBox()
         Me.TextBox2 = New System.Windows.Forms.TextBox()
+        Me.TransactionStatus = New System.Windows.Forms.Label()
         CType(Me.PictureBox1, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
         '
@@ -58,7 +59,7 @@ Partial Class SendingScreen
         Me.Label1.Font = New System.Drawing.Font("Bahnschrift Light", 14.0!)
         Me.Label1.Location = New System.Drawing.Point(222, 7)
         Me.Label1.Name = "Label1"
-        Me.Label1.Size = New System.Drawing.Size(620, 55)
+        Me.Label1.Size = New System.Drawing.Size(647, 55)
         Me.Label1.TabIndex = 5
         Me.Label1.Text = "SENDING CRYPTOCURRENCY ACROSS THE WAYFARER NETWORK"
         Me.Label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
@@ -70,7 +71,7 @@ Partial Class SendingScreen
         Me.Disconnect.ForeColor = System.Drawing.Color.Goldenrod
         Me.Disconnect.Location = New System.Drawing.Point(222, 310)
         Me.Disconnect.Name = "Disconnect"
-        Me.Disconnect.Size = New System.Drawing.Size(459, 52)
+        Me.Disconnect.Size = New System.Drawing.Size(332, 52)
         Me.Disconnect.TabIndex = 17
         Me.Disconnect.Text = "DISCONNECT FROM WAYFARER SYSTEM"
         Me.Disconnect.UseVisualStyleBackColor = False
@@ -93,7 +94,7 @@ Partial Class SendingScreen
         Me.CheckConfirm.ForeColor = System.Drawing.Color.Honeydew
         Me.CheckConfirm.Location = New System.Drawing.Point(222, 259)
         Me.CheckConfirm.Name = "CheckConfirm"
-        Me.CheckConfirm.Size = New System.Drawing.Size(620, 45)
+        Me.CheckConfirm.Size = New System.Drawing.Size(475, 45)
         Me.CheckConfirm.TabIndex = 28
         Me.CheckConfirm.Text = "CHECK DETAILS AND SEND TRANSACTION TO THE POOL"
         Me.CheckConfirm.UseVisualStyleBackColor = False
@@ -117,7 +118,7 @@ Partial Class SendingScreen
         Me.Label3.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
         Me.Label3.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.Label3.ForeColor = System.Drawing.Color.SaddleBrown
-        Me.Label3.Location = New System.Drawing.Point(222, 168)
+        Me.Label3.Location = New System.Drawing.Point(222, 152)
         Me.Label3.Name = "Label3"
         Me.Label3.Size = New System.Drawing.Size(138, 47)
         Me.Label3.TabIndex = 31
@@ -129,9 +130,9 @@ Partial Class SendingScreen
         Me.BackBtn.BackColor = System.Drawing.Color.FromArgb(CType(CType(245, Byte), Integer), CType(CType(0, Byte), Integer), CType(CType(50, Byte), Integer))
         Me.BackBtn.Font = New System.Drawing.Font("Bahnschrift", 12.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.BackBtn.ForeColor = System.Drawing.Color.Goldenrod
-        Me.BackBtn.Location = New System.Drawing.Point(687, 310)
+        Me.BackBtn.Location = New System.Drawing.Point(560, 310)
         Me.BackBtn.Name = "BackBtn"
-        Me.BackBtn.Size = New System.Drawing.Size(155, 52)
+        Me.BackBtn.Size = New System.Drawing.Size(137, 52)
         Me.BackBtn.TabIndex = 32
         Me.BackBtn.Text = "BACK TO MENU"
         Me.BackBtn.UseVisualStyleBackColor = False
@@ -153,7 +154,7 @@ Partial Class SendingScreen
         Me.AddressInput.ForeColor = System.Drawing.Color.Goldenrod
         Me.AddressInput.Location = New System.Drawing.Point(366, 68)
         Me.AddressInput.Name = "AddressInput"
-        Me.AddressInput.Size = New System.Drawing.Size(476, 48)
+        Me.AddressInput.Size = New System.Drawing.Size(503, 48)
         Me.AddressInput.TabIndex = 35
         Me.AddressInput.Text = "CLICK HERE TO ENTER ADDRESS"
         Me.AddressInput.UseVisualStyleBackColor = False
@@ -163,9 +164,9 @@ Partial Class SendingScreen
         Me.AmountInput.BackColor = System.Drawing.Color.FromArgb(CType(CType(224, Byte), Integer), CType(CType(224, Byte), Integer), CType(CType(224, Byte), Integer))
         Me.AmountInput.Font = New System.Drawing.Font("Microsoft Sans Serif", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.AmountInput.ForeColor = System.Drawing.Color.Goldenrod
-        Me.AmountInput.Location = New System.Drawing.Point(366, 168)
+        Me.AmountInput.Location = New System.Drawing.Point(366, 152)
         Me.AmountInput.Name = "AmountInput"
-        Me.AmountInput.Size = New System.Drawing.Size(476, 47)
+        Me.AmountInput.Size = New System.Drawing.Size(503, 47)
         Me.AmountInput.TabIndex = 36
         Me.AmountInput.Text = "CLICK HERE TO ENTER THE AMOUNT"
         Me.AmountInput.UseVisualStyleBackColor = False
@@ -177,25 +178,37 @@ Partial Class SendingScreen
         Me.TextBox1.Location = New System.Drawing.Point(222, 122)
         Me.TextBox1.Name = "TextBox1"
         Me.TextBox1.ReadOnly = True
-        Me.TextBox1.Size = New System.Drawing.Size(620, 23)
+        Me.TextBox1.Size = New System.Drawing.Size(647, 23)
         Me.TextBox1.TabIndex = 37
         '
         'TextBox2
         '
         Me.TextBox2.Font = New System.Drawing.Font("Lucida Console", 12.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.TextBox2.ForeColor = System.Drawing.Color.Navy
-        Me.TextBox2.Location = New System.Drawing.Point(222, 222)
+        Me.TextBox2.Location = New System.Drawing.Point(222, 206)
         Me.TextBox2.Name = "TextBox2"
         Me.TextBox2.ReadOnly = True
-        Me.TextBox2.Size = New System.Drawing.Size(620, 23)
+        Me.TextBox2.Size = New System.Drawing.Size(647, 23)
         Me.TextBox2.TabIndex = 38
+        '
+        'TransactionStatus
+        '
+        Me.TransactionStatus.BackColor = System.Drawing.Color.Ivory
+        Me.TransactionStatus.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
+        Me.TransactionStatus.Font = New System.Drawing.Font("Bahnschrift", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.TransactionStatus.Location = New System.Drawing.Point(703, 235)
+        Me.TransactionStatus.Name = "TransactionStatus"
+        Me.TransactionStatus.Size = New System.Drawing.Size(166, 127)
+        Me.TransactionStatus.TabIndex = 39
+        Me.TransactionStatus.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
         '
         'SendingScreen
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 13.0!)
         Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
         Me.BackColor = System.Drawing.Color.FromArgb(CType(CType(60, Byte), Integer), CType(CType(60, Byte), Integer), CType(CType(70, Byte), Integer))
-        Me.ClientSize = New System.Drawing.Size(854, 374)
+        Me.ClientSize = New System.Drawing.Size(881, 374)
+        Me.Controls.Add(Me.TransactionStatus)
         Me.Controls.Add(Me.TextBox2)
         Me.Controls.Add(Me.TextBox1)
         Me.Controls.Add(Me.AmountInput)
@@ -233,4 +246,5 @@ Partial Class SendingScreen
     Friend WithEvents AmountInput As Button
     Friend WithEvents TextBox1 As TextBox
     Friend WithEvents TextBox2 As TextBox
+    Friend WithEvents TransactionStatus As Label
 End Class
