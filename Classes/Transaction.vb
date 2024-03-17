@@ -88,8 +88,8 @@ Module TransactionOperations
         End If 'nothing is empty list
         Dim TransactArray(TransactList.Count - 1) As String 'array initialisation
         Dim Counter As UInteger = 0 'to set the array index
-        For Each item In TransactList 'loop through list
-            TransactArray(Counter) = item.ToString 'save each transact as string to index
+        For Each Item In TransactList 'loop through list
+            TransactArray(Counter) = Item.ToString 'save each transact as string to index
             Counter += 1
         Next 'returns an array filled with string transacts
         Return TransactArray

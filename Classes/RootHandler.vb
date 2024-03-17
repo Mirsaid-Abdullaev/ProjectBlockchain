@@ -1,28 +1,27 @@
-﻿Imports Newtonsoft.Json.Linq
+﻿Imports System.Net
 Imports System.Net.Sockets
-Imports System.Net
 Imports System.Text
 Imports System.Threading
+Imports Newtonsoft.Json.Linq
 
-Public Class RootHandler 'doesnt need a destructor or destructor-handling variable as it needs to be alive for entire duration of application running.
-    Private UDPSender As UdpClient
-    Private ReadOnly UDPReceiver As UdpClient
-    Private ReadOnly RootEP As New IPEndPoint(IPAddress.Any, ClientPort)
-    Private ReadOnly ServerPort As Integer = 38000
-    Private ReadOnly ClientPort As Integer = 37000
+Public Class RootHandler
+    Private UDPSender As UdpClient 'udp client used to send data to client
+    Private UDPResponder As UdpClient 'udp client used to send a syncresponse to client
+    Private ReadOnly UDPReceiver As UdpClient 'udp client used to send all blockchain data to client
+    Private ReadOnly RootEP As New IPEndPoint(IPAddress.Any, ROOT_CLIENT_PORT) 'endpoint to listen on - receipt of data
+    Private Property KillHandler As Boolean = False 'property to stop the backgorund threads
 
-
-    Private ReadOnly RootListenThread As Thread
-    Private ReadOnly ResponseManagementThread As Thread
-    Private NodeQueue As DataBufferQueue(Of String) 'queue of devices to synchronise (shouldnt be required as the connection process is linear but just in case)
-    Public Sub New()
+    Private ReadOnly RootListenThread As Thread 'thread to listen for sync requests on
+    Private ReadOnly ResponseManagementThread As Thread 'thread to send data to devices on
+    Private NodeQueue As New DataBufferQueue(Of String) 'queue of devices to synchronise (shouldnt be required as the connection process is linear but just in case)
+    Public Sub New() 'sets the threads and the receiving client
         UDPReceiver = New UdpClient(RootEP) With {.EnableBroadcast = False}
-        RootListenThread = New Thread(AddressOf ListenForSync) With {.IsBackground = True} 'root taking requests
+        RootListenThread = New Thread(AddressOf ListenForSyncReq) With {.IsBackground = True} 'root taking requests
         ResponseManagementThread = New Thread(AddressOf CheckDeviceQueue) With {.IsBackground = True} 'root responses to the found devices
     End Sub
 
-    Public Sub Start()
-        If Not IS_ROOT Then
+    Public Sub Start() 'initialises the root handler - starts the threads
+        If Not IsRoot Then
             CustomMsgBox.ShowBox("Error initialising RootHandler: device is not a ROOT", "ERROR", False)
             Exit Sub
         End If
@@ -31,64 +30,107 @@ Public Class RootHandler 'doesnt need a destructor or destructor-handling variab
     End Sub
 
     Private Sub CheckDeviceQueue() 'checks and sends data to any nodes currently in the nodequeue
-        While AppRunning
-            If Not NodeQueue.IsEmpty Then
-                Dim Node As String() = NodeQueue.Dequeue().Split(",")
+        While AppRunning And Not KillHandler
+            If Not NodeQueue.IsEmpty Then 'nodequeue stores a string of the form "{DeviceIP},{StartIndex}"
+                Dim Node As String() = NodeQueue.Dequeue().Split(",") 'process this data
                 Dim DeviceIP As String = Node(0)
                 Dim StartIndex As UInteger = Node(1)
-                SendChainData(DeviceIP, StartIndex)
+                SendChainData(DeviceIP, StartIndex) 'start sending the online sync data to the client
             End If
         End While
+        Destruct() 'stop itself once complete and release unmanaged resources
     End Sub
 
-    Private Sub SendChainData(DeviceIP As String, StartIndex As UInteger) 'this should be called from the thread when a new device registers
+    Private Sub SendChainData(DeviceIP As String, StartIndex As UInteger) 'this is called from the thread when a new device registers
         'send blocks here one by one in the specified range
-        Dim Node As IPAddress
-        Try
-            Node = IPAddress.Parse(DeviceIP)
-        Catch ex As Exception
-            CustomMsgBox.ShowBox("Error in RootHandler.SendChainData, IP address conversion issue", "ERROR", False)
-            Exit Sub
-        End Try
-        Dim TempBlockchainList As List(Of Block) = WFBlockchain.GetChain.GetRange(StartIndex, WFBlockchain.GetChain.Count - StartIndex)
+        Dim NodeAddress As IPAddress = IPAddress.Parse(DeviceIP)
+
+        Dim TempBlockchainList As List(Of Block) = WFBlockchain.Blockchain.GetRange(StartIndex, WFBlockchain.Blockchain.Count - StartIndex)
+        'gets a static list of the current blocks on the network to send to the client
         Try
             UDPSender.Close()
         Catch ex As Exception
             UDPSender = Nothing
         End Try
-
-        Dim EndPoint As New IPEndPoint(Node, ServerPort)
+        'resetting the udpclient for sending to the new endpoint
+        Dim EndPoint As New IPEndPoint(NodeAddress, ROOT_SERVER_PORT)
         UDPSender = New UdpClient(EndPoint)
 
+        'sends the blocks on the network to the client one by one using the correct json schema
         For Each Item As Block In TempBlockchainList
-            Dim BlockResponse As New BlockResponse(Item, "Accepted")
+            Dim BlockResponse As New BlockResponse(Item, True)
             Dim SndData As String = BlockResponse.GetJSONMessage
             Dim SndBytes As Byte() = Encoding.UTF8.GetBytes(SndData)
             UDPSender.Send(SndBytes, SndBytes.Length)
         Next
-        'send transaction pool here too
-        'Dim TransactPoolResponse As New TransactionPoolResponse("Accepted")
-        UDPSender.Close()
 
+        'sends the transaction pool to the client in the schema specified
+        Dim TransactPoolResponse As New TransactionPoolResponse(True, WFTransactionPool)
+        Dim Bytes As Byte() = Encoding.UTF8.GetBytes(TransactPoolResponse.GetJSONMessage)
+        UDPSender.Send(Bytes, Bytes.Length)
+        UDPSender.Close() 'closes the client socket after transmission
     End Sub
 
-    Private Sub ListenForSync() 'should work - registers when a new device sends a syncrequest
-        While AppRunning
+    Private Sub ListenForSyncReq() 'registers when a new device sends a syncrequest
+        While AppRunning And Not KillHandler
+            Dim RecvData As String
+            Dim JsonObject As Object
+
             Try
-                Dim RecvBytes As Byte() = UDPReceiver.Receive(RootEP)
-                Dim RecvData As String = Encoding.UTF8.GetString(RecvBytes)
-                Dim JsonObject As Object = JObject.Parse(RecvData) 'dynamic json object variable that parses data into a json style format for lookups efficiently
+                Dim RecvBytes As Byte() = UDPReceiver.Receive(RootEP) 'tries to see if any UDP datagrams have been sent
+                RecvData = Encoding.UTF8.GetString(RecvBytes)
+                JsonObject = JObject.Parse(RecvData) 'dynamic json object variable that parses data into a json style format for lookups efficiently
+            Catch ex As Exception
+                Continue While
+            End Try
+
+            'if data has gotten to this point, it is in some form of json
+            Try
                 Dim MessageType As String = JsonObject("MessageType").ToString
-                Select Case MessageType
-                    Case "SyncRequest"
-                        NodeQueue.Enqueue(String.Join(",", {JsonObject("DeviceIP"), JsonObject("StartBlock").ToString, JsonObject("EndBlock").ToString})) 'device IP, start and endblock indexes added, split by commas
+                Select Case MessageType 'check for a correct data type
+                    Case "SyncRequest" 'add the device to the node queue for data sending
+                        NodeQueue.Enqueue(String.Join(",", {JsonObject("DeviceIP"), JsonObject("StartBlock").ToString})) 'device IP and startindex added, split by commas
+                        SendSyncResponse(JsonObject("DeviceIP"), JsonObject("StartBlock"))
                         'need to send this device all the blocks it needs for synchronisation
                     Case Else
-                        Throw New Exception 'whatever arrived is not what i need, throw it out
+                        Continue While 'something else was received here, ignore
                 End Select
+
             Catch ex As Exception
-                CustomMsgBox.ShowBox($"Error in UDPHandler.Listen thread, error: {ex.Message}")
+                Continue While 'the underlying json message was not of the correct format
             End Try
+
         End While
+    End Sub
+    Private Sub SendSyncResponse(DeviceIP As String, StartBlock As UInteger)
+        Dim NodeAddress As IPAddress = IPAddress.Parse(DeviceIP)
+        Dim SyncResp As New SyncResponse(True, StartBlock)
+        Dim SndBytes As Byte() = Encoding.UTF8.GetBytes(SyncResp.GetJSONMessage())
+
+        Dim EP As New IPEndPoint(NodeAddress, ROOT_SERVER_PORT)
+        Try
+            UDPResponder.Close()
+            UDPResponder.Dispose()
+        Catch ex As Exception
+            UDPResponder = Nothing
+        End Try
+
+        UDPResponder = New UdpClient(EP)
+        UDPResponder.Send(SndBytes, SndBytes.Length) 'sends a syncresponse to the device
+    End Sub
+
+    Public Sub Destruct() 'disposes of the sockets used by UDP clients and kills the handler
+        KillHandler = True
+        Try
+            UDPReceiver.Close()
+            UDPReceiver.Dispose()
+        Catch ex As Exception
+        End Try
+
+        Try
+            UDPSender.Close()
+            UDPSender.Dispose()
+        Catch ex As Exception
+        End Try
     End Sub
 End Class

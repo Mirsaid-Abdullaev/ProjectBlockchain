@@ -163,12 +163,6 @@
     <Compile Include="Forms\SendingScreen\SendingScreen.vb">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Forms\TestForm\TestForm.Designer.vb">
-      <DependentUpon>TestForm.vb</DependentUpon>
-    </Compile>
-    <Compile Include="Forms\TestForm\TestForm.vb">
-      <SubType>Form</SubType>
-    </Compile>
     <Compile Include="Forms\TransactPoolView\TransactPoolView.Designer.vb">
       <DependentUpon>TransactPoolView.vb</DependentUpon>
     </Compile>
@@ -225,9 +219,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\SendingScreen\SendingScreen.resx">
       <DependentUpon>SendingScreen.vb</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Forms\TestForm\TestForm.resx">
-      <DependentUpon>TestForm.vb</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Forms\TransactPoolView\TransactPoolView.resx">
       <DependentUpon>TransactPoolView.vb</DependentUpon>

@@ -112,8 +112,7 @@ Partial Class BlockchainExplorerH
         Me.BlockchainTxt.ReadOnly = True
         Me.BlockchainTxt.Size = New System.Drawing.Size(764, 395)
         Me.BlockchainTxt.TabIndex = 35
-        Me.BlockchainTxt.Text = "Header view:" & Global.Microsoft.VisualBasic.ChrW(10) & "Block #X:" & Global.Microsoft.VisualBasic.ChrW(10) & "[timestamp]" & Global.Microsoft.VisualBasic.ChrW(10) & "[hash of previous block]" & Global.Microsoft.VisualBasic.ChrW(10) & "[nonce]" & Global.Microsoft.VisualBasic.ChrW(10) & "[hash of tran" &
-    "sactions]" & Global.Microsoft.VisualBasic.ChrW(10) & "Block #X-1:" & Global.Microsoft.VisualBasic.ChrW(10) & "etc..."
+        Me.BlockchainTxt.Text = ""
         '
         'BlockchainExplorerH
         '

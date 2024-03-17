@@ -90,7 +90,7 @@ Partial Class TransactPoolView
         Me.TransactTxt.ReadOnly = True
         Me.TransactTxt.Size = New System.Drawing.Size(703, 264)
         Me.TransactTxt.TabIndex = 23
-        Me.TransactTxt.Text = resources.GetString("TransactTxt.Text")
+        Me.TransactTxt.Text = ""
         '
         'PictureBox1
         '

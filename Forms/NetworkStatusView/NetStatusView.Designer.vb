@@ -89,8 +89,7 @@ Partial Class NetStatusView
         Me.NetStatusTxt.ReadOnly = True
         Me.NetStatusTxt.Size = New System.Drawing.Size(303, 200)
         Me.NetStatusTxt.TabIndex = 23
-        Me.NetStatusTxt.Text = "PREVPTR: ""DEVICE4""" & Global.Microsoft.VisualBasic.ChrW(10) & "NEXTPTR: ""NULL""" & Global.Microsoft.VisualBasic.ChrW(10) & "NODETYPE: ""LEAF""" & Global.Microsoft.VisualBasic.ChrW(10) & "IPADDRESS: ""192.168.1.120""" & Global.Microsoft.VisualBasic.ChrW(10) & "ON" &
-    "LINE: ""TRUE"""
+        Me.NetStatusTxt.Text = ""
         '
         'BackBtn
         '

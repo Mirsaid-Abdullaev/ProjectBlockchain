@@ -45,7 +45,7 @@ Module WalletOperations
     Public Function ScanBlockBalanceUpdate(PublicAddress As String) As Double 'function to get/update a wallet balance
         'go through every block loaded to find and update balance of a wallet - used in updating own balance, and validating others' transactions too
         Dim Balance As Double = 0 'initial balance is (obviously) 0
-        Dim TempList As List(Of Block) = WFBlockchain.GetChain
+        Dim TempList As List(Of Block) = WFBlockchain.Blockchain
         For Each Item As Block In TempList 'as my program is very dynamic this is a measure to stop any runtime errors occurring from new blocks being added during for loop and blowing up the loop
             If Item.GetTransactionList Is Nothing Then
                 Continue For
@@ -81,8 +81,8 @@ Module WalletOperations
         Return Balance
     End Function
 
-    Public Function GetTemporaryBalanceUpdate(PublicAddress As String) As Double 'returns the future change in balance after the current block is mined
-        Dim BalanceChange As Double = 0
+    Public Function GetTemporaryBalanceDelta(PublicAddress As String) As Double 'returns the future change in balance after the current block is mined
+        Dim BalanceDelta As Double = 0
         If WFTransactionPool.GetPoolSize > 0 Then 'checking current transaction pool for any transactions sent by the device to avoid negative intermediate balances
             Dim TransactPool As List(Of Transaction) = WFTransactionPool.GetTransactionList()
             For Each Transact As Transaction In TransactPool
@@ -90,15 +90,15 @@ Module WalletOperations
                     Continue For
                 End If
                 If Transact.Sender = PublicAddress Then
-                    BalanceChange -= Transact.Quantity
+                    BalanceDelta -= Transact.Quantity
                     Continue For
                 End If
                 If Transact.Recipient = PublicAddress Then
-                    BalanceChange += Transact.Quantity
+                    BalanceDelta += Transact.Quantity
                 End If
             Next
         End If
-        Return BalanceChange
+        Return BalanceDelta
     End Function
 End Module
 
@@ -130,7 +130,7 @@ Public Class Wallet
         Next 'now the directory is clear of non-wallet files and we can check for number of wallets
         Try
             Dim CurrCount As Byte = Directory.EnumerateFiles(DirectoryList(0)).Count 'gets the number of wallet files now stored in the directory of \Wallets
-            If CurrCount >= 5 Then 'there are too many wallets owned by the user, cannot make more from this device
+            If CurrCount >= 25 Then 'there are too many wallets owned by the user, cannot make more from this device
                 CustomMsgBox.ShowBox("User reached limit of wallets. Either log into an existing wallet, or delete an existing wallet.", "ERROR", False)
                 'custommsgbox is a class for displaying a message, a message box title, and whether to display or not display a cancel button
                 'please see the CustomMsgBox class definition and the Design.vb module code for further details

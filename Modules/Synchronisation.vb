@@ -4,76 +4,128 @@ Module Synchronisation
     Public ReadOnly LocalPath As String = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) '\AppData\Local folder on any Windows device
     Public ReadOnly GlobalWFPath As String = LocalPath & "\Wayfarer"
 
-    Public Sub Synchronise(ParFrm As SyncForm) 'folder system checked
+    Public Sub SynchroniseNode(ParFrm As SyncForm) 'combines the full sync procedure in one subroutine
         ParFrm.CompletedPercent = 0
-        ParFrm.StatusTxt.Text = "STATUS OF SYNCHRONISATION: CHECKING THROUGH DIRECTORIES AND SUBDIRECTORIES. INITIALISING NECESSARY FILES"
+        ParFrm.UpdateStatus("STATUS OF SYNCHRONISATION: CHECKING THROUGH DIRECTORIES AND SUBDIRECTORIES. INITIALISING NECESSARY FILES")
+
         If Not Directory.Exists(GlobalWFPath) Then 'creates the \Wayfarer directory if not existing already
-        Dim DI As DirectoryInfo = Directory.CreateDirectory(GlobalWFPath)
+            Dim DI As DirectoryInfo = Directory.CreateDirectory(GlobalWFPath)
             DI.Attributes = FileAttributes.Hidden 'makes the \Wayfarer directory hidden
         End If
         ParFrm.CompletedPercent = 2 '2% completion on the syncform from where it is called.
+
+
         For I As Byte = 0 To 2 'generates the hierarchy of subdirectories if they don't exist already
             If Not Directory.Exists(DirectoryList(I)) Then
                 Directory.CreateDirectory(DirectoryList(I)) '\Blocks, \Wallets, \Network
             End If
         Next
         ParFrm.CompletedPercent = 5 '5% sync process complete at this point
+
+
         If File.Exists(DirectoryList(1) & "Block0" & ExtensionList(1)) Then 'delete existing genesis block file
             DeleteFileOrDir(DirectoryList(1) & "Block0" & ExtensionList(1))
         End If
         'if the genesis block is corrupt, the entire chain is corrupt, so the genesis block has to be valid guaranteed
         'only way to do that is by deleting it and recreating the block and blockfile again
-        ParFrm.StatusTxt.Text = "STATUS OF SYNCHRONISATION: FINISHED DOING A LOCAL DIRECTORY CHECK, ALL SUBDIRECTORIES CREATED/EXIST"
-        SyncForm.CompletedPercent = 8
-        CreateFileFromBlock(GenesisBlock) 'oveerrides any potential errors in genesis block by deleting and resaving a new copy
-        ParFrm.StatusTxt.Text = "STATUS OF SYNCHRONISATION: CHECKING IF NODE IS ROOT DEVICE"
+        CreateFileFromBlock(GENESIS_BLOCK) 'oveerrides any potential errors in genesis block by deleting and resaving a new copy
+        ParFrm.UpdateStatus("STATUS OF SYNCHRONISATION: FINISHED DOING A LOCAL DIRECTORY CHECK, ALL SUBDIRECTORIES CREATED/EXIST")
+        ParFrm.CompletedPercent = 8
 
-        IS_ROOT = CheckRootStatus() 'sets the flag for device being a root
+
+        ParFrm.UpdateStatus("STATUS OF SYNCHRONISATION: CHECKING IF NODE IS ROOT DEVICE")
+        IsRoot = CheckRootStatus() 'sets the flag for device being a root
         ParFrm.CompletedPercent = 12
-        ParFrm.StatusTxt.Text = $"STATUS OF SYNCHRONISATION: ROOT CHECK COMPLETE, DEVICE {If(IS_ROOT, "IS", "ISN'T")} A ROOT."
+        ParFrm.UpdateStatus($"STATUS OF SYNCHRONISATION: ROOT CHECK COMPLETE, DEVICE {If(IsRoot, "IS", "ISN'T")} A ROOT.")
 
-        If Not IS_ROOT Then 'if device not root, must perform the online sync process after the local sync
-            ParFrm.StatusTxt.Text = "STATUS OF SYNCHRONISATION: BEGINNING LOCAL SYNCHRONISATION FROM STORAGE."
+
+        If Not IsRoot Then 'if device not root, must perform the online sync process after the local sync
+            ParFrm.UpdateStatus("STATUS OF SYNCHRONISATION: BEGINNING LOCAL SYNCHRONISATION FROM STORAGE.")
             Dim RequestIndex As UInteger = LocalSync(ParFrm) 'performs the local synchronisation process
-            ParFrm.StatusTxt.Text = $"STATUS OF SYNCHRONISATION: LOCAL SYNCHRONISATION FROM STORAGE COMPLETE. {RequestIndex - 1} BLOCKS LOADED."
-
-            ParFrm.StatusTxt.Text = "STATUS OF SYNCHRONISATION: BEGINNING ONLINE SYNCHRONISATION ON THE WAYFARER NETWORK."
-
+            ParFrm.UpdateStatus($"STATUS OF SYNCHRONISATION: LOCAL SYNCHRONISATION FROM STORAGE COMPLETE. {RequestIndex - 1} BLOCKS LOADED.")
+            ParFrm.UpdateStatus("STATUS OF SYNCHRONISATION: BEGINNING ONLINE SYNCHRONISATION ON THE WAYFARER NETWORK. LOOKING FOR NODES...")
             OnlineSync(RequestIndex) 'performs the online sync process
-            ParFrm.StatusTxt.Text = "STATUS OF SYNCHRONISATION: COMPLETED ONLINE SYNCHRONISATION ON THE WAYFARER NETWORK. DEVICE IS NOW SYNCED."
+            ParFrm.CompletedPercent = 100
+            ParFrm.UpdateStatus($"STATUS OF SYNCHRONISATION: COMPLETED ONLINE SYNCHRONISATION ON THE WAYFARER NETWORK. DEVICE IS NOW SYNCED. CONNECTED TO DEVICE: {PrevTCP}")
             Exit Sub 'if not root, both a local and online need to be performed
         End If
-        ParFrm.StatusTxt.Text = "STATUS OF SYNCHRONISATION: BEGINNING LOCAL SYNCHRONISATION FROM STORAGE."
+
+        ParFrm.CompletedPercent = 70
+        ParFrm.UpdateStatus("STATUS OF SYNCHRONISATION: BEGINNING LOCAL SYNCHRONISATION FROM STORAGE.")
         LocalSync(ParFrm) 'root performs local sync only and doesnt store result in a variable - this will be the most up-to-date version
         IsSynchronised = True 'as it is the root, it can be instantly synced
-        ParFrm.StatusTxt.Text = "STATUS OF SYNCHRONISATION: COMPLETED LOCAL SYNCHRONISATION ON THE WAYFARER NETWORK. ROOT NODE IS NOW SYNCED."
+        IsLeaf = True 'first live device on the network
+        ParFrm.UpdateStatus("STATUS OF SYNCHRONISATION: COMPLETED LOCAL SYNCHRONISATION ON THE WAYFARER NETWORK. ROOT NODE IS NOW SYNCED.")
+
+
         WFRootHandler = New RootHandler() 'initialising the root handler as it is a root device, the only way to cut it off is to exit app, root device cannot become non-root and stay on chain
+        WFRootHandler.Start()
+        WFConnectionHandler = New ConnectionHandler() 'sets up the broadcasting of connection requests
+        WFConnectionHandler.Start()
+        ParFrm.CompletedPercent = 100
     End Sub
 
-    Public Sub DeleteFileOrDir(Path As String) 'generic utility to delete a file or folder
-        Try
-            ' Check if the file/dir exists before attempting to delete
-            If Directory.Exists(Path) Then
-                Directory.Delete(Path)
-            End If
-            If File.Exists(Path) Then
-                File.Delete(Path)
-            End If
-        Catch ex As Exception
-            CustomMsgBox.ShowBox("Error: " & ex.Message, "ERROR", False)
-        End Try
-    End Sub
-    Public Sub OnlineSync(StartBlock As UInteger) 'unfinished implementation but flowchart for algorithm is ready
-        Dim ConnectionHandler As New ConnectionHandler()
-        ConnectionHandler.Start()
+
+    Public Sub OnlineSync(StartBlock As UInteger) 'performs the online sync process
+        WFConnectionHandler = New ConnectionHandler()
+        WFConnectionHandler.Start() 'begins the connection handler - listening for incoming connection broadcasts
+
+        'waiting until we link with a leaf node
+        Dim TimeOutSW As New Stopwatch()
+        TimeOutSW.Start() 'stopwatch used to keep track of elapsed time, and manage timed out requests
         While PrevTCP Is Nothing
-            Continue While
+            If TimeOutSW.ElapsedMilliseconds > 30000 Then
+                TimeOutSW.Reset()
+                '30 seconds have passed, notify user that this has happened, and give choice to continue looking for nodes, or exit.
+                If CustomMsgBox.ShowBox("No devices active or live on the network. Unable to connect to the blockchain. You can keep trying, or exit the application. Click OK to continue, CANCEL to exit the application.", "NO LIVE NODES FOUND", True) Then
+                    TimeOutSW.Restart() 'user clicked OK, to wait more
+                Else 'user clicked cancel, so exit the application
+                    AppRunning = False
+                    DisconnectFromChain()
+                    WFConnectionHandler.Destruct()
+                    Application.Exit()
+                End If
+            End If
+            Continue While 'this will keep the program flow here while this node is not connected to an existing leaf
+        End While
+        'now we have connected to a previous device and are the leaf node - time to communicate with the root
+
+
+        WFRootHandlerClient = New RootHandlerClient(StartBlock) 'starts the communications with the root device and receives blockchain data
+        While Not WFRootHandlerClient.HasFinished
+            If Not WFRootHandlerClient.HasTimedOut Then
+                Continue While 'checking for root client handler timeout through its bool property
+            Else
+                CustomMsgBox.ShowBox("Root node timeout error - synchronisation process failed. Try again later.", "ERROR", False)
+                AppRunning = False
+                IsSynchronised = False
+                DisconnectFromChain()
+                Application.Exit()
+                Exit Sub 'kicks the user out of the app
+            End If
         End While
 
-        Dim BlkReq As New SyncRequest(StartBlock)
 
-        'perform the online sync procedure
-        'send request to root on the net thread and wait for responses to load in 
+        'now we should have all the received blocks
+        Dim ReceivedBlocks As List(Of Block) = WFRootHandlerClient.GetReceivedBlocks
+        If ReceivedBlocks.First().GetIndex > StartBlock Then
+            'error occurred, must redo the sync process - this will kick the user out of the app
+            CustomMsgBox.ShowBox("Error: the root device sent back incomplete/corrupted block data. Online sync process failed, try again later.", "ERROR", False)
+            AppRunning = False
+            IsSynchronised = False
+            DisconnectFromChain()
+            Application.Exit()
+            Exit Sub
+        End If
+
+        WFBlockchain.UpdateBlockchain(ReceivedBlocks) 'gets all the received blocks stored onto the chain and storage
+        IsSynchronised = True
+        IsLeaf = True
+
+        WFRootHandlerClient.Destruct() 'kills the root handler client
+        WFConnectionHandler.Destruct() 'resets the connection handler
+        WFConnectionHandler = New ConnectionHandler() ' resets the connection handler to send out broadcasts now
+        WFConnectionHandler.Start()
     End Sub
 
     Public Function LocalSync(Optional ParFrm As SyncForm = Nothing) As UInteger 'returns index from which data needs to be requested
@@ -135,12 +187,6 @@ ErrorConditional:       NeedToDelete = True 'this terminates the for loop and al
         Return RequestIndex 'returns the index of the block from where the device needs to request a copy of the chain
     End Function
 
-    Function UpdateBlockchain(StartIndex As UInteger) 'incomplete
-        'will use the received blocks and the current blockchain instance to load all the blocks in sequentially in order
-        Return Nothing
-    End Function
-
-
     Function CheckRootStatus() As Boolean 'returns whether a device is the root or not
         Dim FilePath As String = DirectoryList(2) & "NetworkStatus" & ExtensionList(2) 'gets the network status file's filepath
         If File.Exists(FilePath) Then
@@ -160,8 +206,44 @@ ErrorConditional:       NeedToDelete = True 'this terminates the for loop and al
                 Return False 'not a root
             End If
         Else 'file doesnt exist, create it and leave as empty
-            File.Create(FilePath)
+            Using File.Create(FilePath)
+            End Using
+            Return False
         End If
         Return True
     End Function
+
+    Sub RemoveRootStatus()
+        Dim FilePath As String = DirectoryList(2) & "NetworkStatus" & ExtensionList(2) 'gets the network status file's filepath
+        If File.Exists(FilePath) Then
+            File.Delete(FilePath)
+            File.Create(FilePath) 'reinitialise the file as an empty to clear any integrity issues
+        Else 'file doesnt exist, create it and leave as empty
+            File.Create(FilePath)
+        End If
+    End Sub
+
+    Sub SetRootStatus()
+        Dim FilePath As String = DirectoryList(2) & "NetworkStatus" & ExtensionList(2) 'gets the network status file's filepath
+        Dim Text As String = GetSHA256FromString("ROOT" & "WAYFARER_V1")
+        If File.Exists(FilePath) Then
+            File.Delete(FilePath)
+        End If
+        Using SW As New StreamWriter(FilePath)
+            SW.Write(Text)
+        End Using 'reinitialise the file
+    End Sub
+    Public Sub DeleteFileOrDir(Path As String) 'generic utility to delete a file or folder
+        Try
+            ' Check if the file/dir exists before attempting to delete
+            If Directory.Exists(Path) Then
+                Directory.Delete(Path)
+            End If
+            If File.Exists(Path) Then
+                File.Delete(Path)
+            End If
+        Catch ex As Exception
+            CustomMsgBox.ShowBox("Error: " & ex.Message, "ERROR", False)
+        End Try
+    End Sub
 End Module

@@ -112,7 +112,7 @@ Partial Class BlockchainExplorerF
         Me.BlockchainTxt.ReadOnly = True
         Me.BlockchainTxt.Size = New System.Drawing.Size(757, 390)
         Me.BlockchainTxt.TabIndex = 35
-        Me.BlockchainTxt.Text = resources.GetString("BlockchainTxt.Text")
+        Me.BlockchainTxt.Text = ""
         '
         'BlockchainExplorerF
         '

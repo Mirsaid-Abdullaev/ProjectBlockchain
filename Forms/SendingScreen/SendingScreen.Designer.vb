@@ -34,8 +34,8 @@ Partial Class SendingScreen
         Me.PictureBox1 = New System.Windows.Forms.PictureBox()
         Me.AddressInput = New System.Windows.Forms.Button()
         Me.AmountInput = New System.Windows.Forms.Button()
-        Me.TextBox1 = New System.Windows.Forms.TextBox()
-        Me.TextBox2 = New System.Windows.Forms.TextBox()
+        Me.AddressInputTxt = New System.Windows.Forms.TextBox()
+        Me.SendingAmountTxt = New System.Windows.Forms.TextBox()
         Me.TransactionStatus = New System.Windows.Forms.Label()
         CType(Me.PictureBox1, System.ComponentModel.ISupportInitialize).BeginInit()
         Me.SuspendLayout()
@@ -71,7 +71,7 @@ Partial Class SendingScreen
         Me.Disconnect.ForeColor = System.Drawing.Color.Goldenrod
         Me.Disconnect.Location = New System.Drawing.Point(222, 310)
         Me.Disconnect.Name = "Disconnect"
-        Me.Disconnect.Size = New System.Drawing.Size(332, 52)
+        Me.Disconnect.Size = New System.Drawing.Size(309, 52)
         Me.Disconnect.TabIndex = 17
         Me.Disconnect.Text = "DISCONNECT FROM WAYFARER SYSTEM"
         Me.Disconnect.UseVisualStyleBackColor = False
@@ -94,7 +94,7 @@ Partial Class SendingScreen
         Me.CheckConfirm.ForeColor = System.Drawing.Color.Honeydew
         Me.CheckConfirm.Location = New System.Drawing.Point(222, 259)
         Me.CheckConfirm.Name = "CheckConfirm"
-        Me.CheckConfirm.Size = New System.Drawing.Size(475, 45)
+        Me.CheckConfirm.Size = New System.Drawing.Size(452, 45)
         Me.CheckConfirm.TabIndex = 28
         Me.CheckConfirm.Text = "CHECK DETAILS AND SEND TRANSACTION TO THE POOL"
         Me.CheckConfirm.UseVisualStyleBackColor = False
@@ -130,7 +130,7 @@ Partial Class SendingScreen
         Me.BackBtn.BackColor = System.Drawing.Color.FromArgb(CType(CType(245, Byte), Integer), CType(CType(0, Byte), Integer), CType(CType(50, Byte), Integer))
         Me.BackBtn.Font = New System.Drawing.Font("Bahnschrift", 12.0!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
         Me.BackBtn.ForeColor = System.Drawing.Color.Goldenrod
-        Me.BackBtn.Location = New System.Drawing.Point(560, 310)
+        Me.BackBtn.Location = New System.Drawing.Point(537, 310)
         Me.BackBtn.Name = "BackBtn"
         Me.BackBtn.Size = New System.Drawing.Size(137, 52)
         Me.BackBtn.TabIndex = 32
@@ -171,34 +171,34 @@ Partial Class SendingScreen
         Me.AmountInput.Text = "CLICK HERE TO ENTER THE AMOUNT"
         Me.AmountInput.UseVisualStyleBackColor = False
         '
-        'TextBox1
+        'AddressInputTxt
         '
-        Me.TextBox1.Font = New System.Drawing.Font("Lucida Console", 12.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.TextBox1.ForeColor = System.Drawing.Color.Navy
-        Me.TextBox1.Location = New System.Drawing.Point(222, 122)
-        Me.TextBox1.Name = "TextBox1"
-        Me.TextBox1.ReadOnly = True
-        Me.TextBox1.Size = New System.Drawing.Size(647, 23)
-        Me.TextBox1.TabIndex = 37
+        Me.AddressInputTxt.Font = New System.Drawing.Font("Lucida Console", 12.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.AddressInputTxt.ForeColor = System.Drawing.Color.Navy
+        Me.AddressInputTxt.Location = New System.Drawing.Point(222, 122)
+        Me.AddressInputTxt.Name = "AddressInputTxt"
+        Me.AddressInputTxt.ReadOnly = True
+        Me.AddressInputTxt.Size = New System.Drawing.Size(647, 23)
+        Me.AddressInputTxt.TabIndex = 37
         '
-        'TextBox2
+        'SendingAmountTxt
         '
-        Me.TextBox2.Font = New System.Drawing.Font("Lucida Console", 12.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.TextBox2.ForeColor = System.Drawing.Color.Navy
-        Me.TextBox2.Location = New System.Drawing.Point(222, 206)
-        Me.TextBox2.Name = "TextBox2"
-        Me.TextBox2.ReadOnly = True
-        Me.TextBox2.Size = New System.Drawing.Size(647, 23)
-        Me.TextBox2.TabIndex = 38
+        Me.SendingAmountTxt.Font = New System.Drawing.Font("Lucida Console", 12.0!, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
+        Me.SendingAmountTxt.ForeColor = System.Drawing.Color.Navy
+        Me.SendingAmountTxt.Location = New System.Drawing.Point(222, 206)
+        Me.SendingAmountTxt.Name = "SendingAmountTxt"
+        Me.SendingAmountTxt.ReadOnly = True
+        Me.SendingAmountTxt.Size = New System.Drawing.Size(647, 23)
+        Me.SendingAmountTxt.TabIndex = 38
         '
         'TransactionStatus
         '
         Me.TransactionStatus.BackColor = System.Drawing.Color.Ivory
         Me.TransactionStatus.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle
         Me.TransactionStatus.Font = New System.Drawing.Font("Bahnschrift", 8.25!, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, CType(0, Byte))
-        Me.TransactionStatus.Location = New System.Drawing.Point(703, 235)
+        Me.TransactionStatus.Location = New System.Drawing.Point(680, 235)
         Me.TransactionStatus.Name = "TransactionStatus"
-        Me.TransactionStatus.Size = New System.Drawing.Size(166, 127)
+        Me.TransactionStatus.Size = New System.Drawing.Size(189, 127)
         Me.TransactionStatus.TabIndex = 39
         Me.TransactionStatus.TextAlign = System.Drawing.ContentAlignment.MiddleLeft
         '
@@ -209,8 +209,8 @@ Partial Class SendingScreen
         Me.BackColor = System.Drawing.Color.FromArgb(CType(CType(60, Byte), Integer), CType(CType(60, Byte), Integer), CType(CType(70, Byte), Integer))
         Me.ClientSize = New System.Drawing.Size(881, 374)
         Me.Controls.Add(Me.TransactionStatus)
-        Me.Controls.Add(Me.TextBox2)
-        Me.Controls.Add(Me.TextBox1)
+        Me.Controls.Add(Me.SendingAmountTxt)
+        Me.Controls.Add(Me.AddressInputTxt)
         Me.Controls.Add(Me.AmountInput)
         Me.Controls.Add(Me.AddressInput)
         Me.Controls.Add(Me.BackBtn)
@@ -244,7 +244,7 @@ Partial Class SendingScreen
     Friend WithEvents BackBtn As Button
     Friend WithEvents AddressInput As Button
     Friend WithEvents AmountInput As Button
-    Friend WithEvents TextBox1 As TextBox
-    Friend WithEvents TextBox2 As TextBox
+    Friend WithEvents SendingAmountTxt As TextBox
     Friend WithEvents TransactionStatus As Label
+    Friend WithEvents AddressInputTxt As TextBox
 End Class

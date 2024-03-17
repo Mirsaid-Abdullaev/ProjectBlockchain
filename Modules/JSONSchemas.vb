@@ -2,18 +2,18 @@
 Module RequestsResponses
     Public MustInherit Class Request 'abstract base class for all requests
         Public ReadOnly Property MessageType As String
-        Public ReadOnly Property DeviceName As String
         Public ReadOnly Property DeviceIP As String
-        Public ReadOnly Property PrevPtr As String
-        Public ReadOnly Property NextPtr As String
         Public ReadOnly Property AppIDMessage As String
+        Public ReadOnly Property RootAddress As String 'ip address of root
         Public Sub New(RequestType As String)
             MessageType = RequestType
-            DeviceName = GetDeviceName()
             DeviceIP = GetOwnIP().ToString
-            PrevPtr = PreviousPointer
-            NextPtr = NextPointer
             AppIDMessage = "WAYFARER_V1"
+            If IsRoot Then
+                RootAddress = DeviceIP 'this device is the root
+            Else
+                RootAddress = ROOT_IP 'sending the ip of the root, which is further up the linked list
+            End If
         End Sub
 
         Public MustOverride Function GetJSONMessage() As String 'abstract function - redefined in child classes
@@ -21,27 +21,22 @@ Module RequestsResponses
 
     Public Class ConnectionRequest
         Inherits Request
-        Public ReadOnly Property RootAddress As String 'ip address of root
         Public Overrides Function GetJSONMessage() As String
             Return JsonConvert.SerializeObject(Me)
         End Function
         Public Sub New()
             MyBase.New("ConnectionRequest")
-            If IS_ROOT Then
-                RootAddress = DeviceIP 'this device is the root
-            Else
-                RootAddress = ROOT_IP 'sending the ip of the root, which is further up the linked list
-            End If
+
         End Sub
     End Class
 
     Public Class SyncRequest
         Inherits Request
         Public ReadOnly Property StartBlock As UInteger
-        Public ReadOnly Property EndBlock As UInteger 'for requesting specific ranges
         Public Overrides Function GetJSONMessage() As String
             Return JsonConvert.SerializeObject(Me)
         End Function
+
         Public Sub New(StartBlock As UInteger)
             MyBase.New("SyncRequest")
             Me.StartBlock = StartBlock
@@ -66,19 +61,6 @@ Module RequestsResponses
             Me.Quantity = Transact.Quantity
             Me.Fee = Transact.Fee
         End Sub
-    End Class
-
-    Public Class BlockRequest 'for requesting standalone blocks in the case of errors in the received block or corrupted data transmission
-        Inherits Request
-        Public ReadOnly Property BlockIndex As UInteger
-
-        Public Sub New(BlockIndex As UInteger)
-            MyBase.New("BlockRequest")
-            Me.BlockIndex = BlockIndex
-        End Sub
-        Public Overrides Function GetJSONMessage() As String
-            Return JsonConvert.SerializeObject(Me)
-        End Function
     End Class
 
     Public Class ValidateNewMinedBlockRequest 'high priority
@@ -163,13 +145,11 @@ Module RequestsResponses
 
     Public MustInherit Class Response 'abstract base response
         Public Property MessageType As String
-        Public Property DeviceName As String
         Public Property DeviceIP As String
         Public ReadOnly Property AppIDMessage As String = "WAYFARER_V1"
         Public Property Status As String
         Public Sub New(ResponseType As String, Status As Boolean)
             MessageType = ResponseType
-            DeviceName = GetDeviceName()
             DeviceIP = GetOwnIP().ToString
             Me.Status = If(Status, "Accept", "Decline")
         End Sub
@@ -240,16 +220,16 @@ Module RequestsResponses
         End Function
         Public Sub New(Status As Boolean)
             MyBase.New("ValidateNewMinedBlockResponse", Status)
-            'accept or decline the block - one accept is enough to transmit
+            'accept or decline the proposed block
         End Sub
     End Class
 
-    Public Class SyncResponse
+    Public Class SyncResponse 'used by root to send to clients
         Inherits Response
-        Public ReadOnly CurrentBlockIndex As UInteger
-        Public Sub New(Status As String)
+        Public ReadOnly Property ExpectedBlocks As UInteger
+        Public Sub New(Status As String, StartBlock As UInteger)
             MyBase.New("SyncResponse", Status)
-            CurrentBlockIndex = WFBlockchain.GetLastBlock.GetIndex
+            ExpectedBlocks = WFBlockchain.GetLastBlock.GetIndex - StartBlock + 1
         End Sub
         Public Overrides Function GetJSONMessage() As String
             Return JsonConvert.SerializeObject(Me)

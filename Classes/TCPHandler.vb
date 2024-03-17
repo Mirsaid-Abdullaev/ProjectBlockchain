@@ -9,44 +9,43 @@ Public Class TCPHandler
     Private ReadOnly Server As TcpListener
     Public ReadOnly DeviceIP As IPAddress
     Private ReadOnly ServerThread As Thread
-    Public Sub New(DeviceIP As IPAddress, Optional ClientPort As Integer = 36000)
+    Public Property KillHandler As Boolean = False
+    Public Sub New(DeviceIP As IPAddress)
         Client = New TcpClient()
-        Server = New TcpListener(DeviceIP, ClientPort)
+        Server = New TcpListener(DeviceIP, GLOBAL_CLIENT_PORT) 'sets the server to listen to the specified device ip, on the client port
         Me.DeviceIP = DeviceIP
 
-        ServerThread = New Thread(AddressOf ReceiveData) With {.IsBackground = True}
+        ServerThread = New Thread(AddressOf ReceiveData) With {.IsBackground = True} 'server listens on the background thread
         ServerThread.Start()
     End Sub
 
-    Public Sub SendData(Data As String)
+    Public Sub SendData(Data As String) 'sends data provided to the connected device
         Try
-            Client.Connect(DeviceIP, ServerPort)
+            Client.Connect(DeviceIP, GLOBAL_SERVER_PORT) 'sends to the server port
             Dim Stream As NetworkStream = Client.GetStream()
             Dim SndBytes As Byte() = Encoding.UTF8.GetBytes(Data)
             Stream.Write(SndBytes, 0, SndBytes.Length)
         Catch ex As Exception
-            SendData(Data)
             CustomMsgBox.ShowBox($"Error in TCPHandler.SendData(), error: {ex.Message}")
         Finally
-            Client.Close()
+            Client.Close() 'closes the client instance to release socket binding
         End Try
     End Sub
 
-    Private Sub ReceiveData()
+    Private Sub ReceiveData() 'thread of the server to listen for data
         Server.Start()
-        While AppRunning
+        While AppRunning And Not KillHandler
             Try
-                If Server.Pending() Then
-                    Dim Client As TcpClient = Server.AcceptTcpClient
-                    CustomMsgBox.ShowBox($"Client {DirectCast(Client.Client.RemoteEndPoint, IPEndPoint).Address}")
-                    Dim HandlerThread As New Thread(AddressOf HandleClientData) With {.IsBackground = True}
+                If Server.Pending() Then 'checks whether clients waiting to transmit data
+                    Dim Client As TcpClient = Server.AcceptTcpClient 'creates a temporary client to communicate with
+                    Dim HandlerThread As New Thread(AddressOf HandleClientData) With {.IsBackground = True} 'makes the client response management happen on a different thread to allow receiving multiple client communications simultaneously
                     HandlerThread.Start(Client)
                 End If
             Catch
                 Continue While
             End Try
         End While
-
+        Server.Stop() 'stops the server
     End Sub
 
     Private Sub HandleClientData(ClientObj As Object)
@@ -62,10 +61,17 @@ Public Class TCPHandler
                 If JsonObject("AppIDMessage") <> "WAYFARER_V1" Then
                     Throw New Exception
                 End If
-                InboundJSONBuffer.Enqueue(ReceivedData, If(HighPriorityRRs.Contains(JsonObject("MessageType")), "high", "low"))
+                InboundJSONBuffer.Enqueue(ReceivedData, If(HighPriorityRRs.Contains(JsonObject("MessageType")), "high", "low")) 'adds the received data to the inbound queue based on messagetype priority
             End Using
         Catch ex As Exception
             Exit Sub
+        Finally
+            Client.Close() 'disposes of the client instance
+            Client.Dispose()
         End Try
     End Sub
+
+    Public Overrides Function ToString() As String
+        Return DeviceIP.ToString()
+    End Function
 End Class

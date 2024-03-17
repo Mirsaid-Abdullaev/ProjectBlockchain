@@ -1,23 +1,13 @@
 ﻿Imports System.IO
 
 Public Class BlockChain
-    Public Sub AddBlock(NewBlock As Block) 'adds a block to the underlying list of blocks and attempts local copy save
-        Chain.Add(NewBlock)
-        Try
-            CreateFileFromBlock(NewBlock)
-        Catch ex As Exception
-            Exit Sub
-        End Try
-    End Sub
-
     Public ReadOnly Property Difficulty As Byte = 2 'Specifies limits for a hash - e.g. 6 trailing 0's in the hash (higher = more difficult to mine)
-    'will pull this out to be a global const to allow all processes to use it by reference and not hardcoding it in all code manually
-    Private Property Chain As List(Of Block) 'underlying list of blocks in the blockchain
-    Public ReadOnly Property GetChain As List(Of Block)
+    Private Chain As List(Of Block) 'underlying list of blocks in the blockchain
+    Public ReadOnly Property Blockchain As List(Of Block)
         Get
             Return Chain
         End Get
-    End Property 'getter for the chain
+    End Property 'getter for the underlying chain
     Public ReadOnly Property GetLastBlock As Block
         Get
             Return Chain.Last() 'returns the last block on the chain
@@ -28,24 +18,14 @@ Public Class BlockChain
         For I As Integer = 1 To Chain.Count - 1 'starts at 1 as block 0 is always correct and can take for granted
             Dim CurrentBlock As Block = Chain.Item(I)
             Dim LastBlock As Block = Chain.Item(I - 1)
-            If CurrentBlock.GetPrevHash <> LastBlock.GetHash() OrElse CurrentBlock.GetHash <> GetSHA256FromString(CurrentBlock.GetBlockDataForMining) OrElse CULng(CurrentBlock.GetTimestamp) < CULng(LastBlock.GetTimestamp) OrElse CurrentBlock.GetIndex <> LastBlock.GetIndex + 1 Then
+            If Not IsValidNextBlock(CurrentBlock, LastBlock) Then
                 Return False
             End If
         Next
         Return True
     End Function
 
-    Public Sub ReplaceNewChain(NewChain As BlockChain) 'possibly redundant at the moment
-        If NewChain.Chain.Count < Chain.Count Then
-            CustomMsgBox.ShowBox("Chain received is shorter than current chain!", "ERROR", False)
-        ElseIf Not NewChain.IsValidChain() Then
-            CustomMsgBox.ShowBox("Chain received is not valid!", "ERROR", False)
-        Else
-            Chain = NewChain.Chain
-        End If
-    End Sub
-
-    Public Sub DeleteLastBlock() 'literally deletes the last block from the list but also from the file system
+    Public Sub DeleteLastBlock() 'literally deletes the last block from the list and also from the file system
         If Chain.Count > 1 Then
             Me.Chain.RemoveAt(Chain.Count - 1)
             Dim FilePath As String = DirectoryList(1) & "Block" & Chain.Count.ToString
@@ -59,6 +39,38 @@ Public Class BlockChain
 
     Public Sub New()
         Chain = New List(Of Block)
-        AddBlock(GenesisBlock) 'adds the genesis block by default
+        AddBlock(GENESIS_BLOCK) 'adds the genesis block by default
+    End Sub
+
+    Public Sub AddBlock(NewBlock As Block) 'adds a block to the underlying list of blocks and attempts local copy save
+        Chain.Add(NewBlock)
+        Try
+            CreateFileFromBlock(NewBlock)
+        Catch ex As Exception
+            Exit Sub
+        End Try
+    End Sub
+    Public Sub UpdateBlockchain(BlockList As List(Of Block)) 'takes in a list of blocks received from root handler client, and adds them to the chain
+        Dim LocalList As List(Of Block) = BlockList 'makes a copy of the list
+        LocalList.Sort(New BlockIndexComparer()) 'sorts the list according to their indexes, in ascending order
+        For I = 0 To LocalList.Count - 1 'iterating through the blocks, they are in index-sorted ascending order now
+            Dim Item As Block = LocalList(I)
+
+            If Item.GetIndex <= Chain.Last.GetIndex Then 'this means data is not necessary, we need to skip through
+                Continue For
+            Else
+                AddBlock(Item)
+            End If
+        Next
+
+        If Not Me.IsValidChain() Then 'either node data is messed up, or received data is messed up - try delete all invalid blocks
+            While Not Me.IsValidChain()
+                Me.DeleteLastBlock() 'keep deleting the last block and checking if chain is valid
+            End While
+            CustomMsgBox.ShowBox("Error: Root device sent incomplete/corrupt data. Application will exit now.")
+            IsSynchronised = False
+            DisconnectFromChain()
+            Application.Exit() 'exit the application, as synchronisation failed.
+        End If
     End Sub
 End Class

@@ -8,68 +8,82 @@ Imports Newtonsoft.Json
 Imports Newtonsoft.Json.Linq
 
 Module AppGlobals
+    '
+    'CONSTANT DATA
+    '
     Public ReadOnly DirectoryList() As String = {Synchronisation.GlobalWFPath & "\Wallets\", Synchronisation.GlobalWFPath & "\Blocks\", Synchronisation.GlobalWFPath & "\Network\"}
     Public ReadOnly ExtensionList() As String = {".wfwlt", ".wfbc", ".wfns"}
-    'shortcuts for functionally abstracting the file path getting methods
-    Public ReadOnly GenesisBlock As New Block("00422297B2426BB6B3D7B54D5AC18FA1166719B3C33F15C9AF439324EF623D5D", StrDup(64, "0"), 0, 355, StrDup(64, "0"), Nothing, StrDup(64, "0")) 'genesis block for all devices, hardcoded
+    Public ReadOnly HighPriorityRRs As List(Of String) = {"ValidateNewMinedBlockResponse", "TransmitNewBlockRequest", "ValidateNewMinedBlockRequest", "DisconnectRequest"}.ToList 'high priority messagetypes for sorting the priority of additions to the inbound queue
+    Public ReadOnly GENESIS_BLOCK As New Block("00422297B2426BB6B3D7B54D5AC18FA1166719B3C33F15C9AF439324EF623D5D", StrDup(64, "0"), 0, 355, StrDup(64, "0"), Nothing, StrDup(64, "0")) 'genesis block for all devices, hardcoded
     'constant block instance created at runtime as it is vital to keeping the blockchain integrity and error checking - due to daisy chain nature of blockchains, an error in the first block invalidates the entire chain
-    Public Const ServerPort As Integer = 35000 'for receiving data inbound via non-root comms
-    Public Const ClientPort As Integer = 36000 'for sending data outbound via non-root comms
-
-    Public PrevTCP As TCPHandler = Nothing 'for prev device comms via tcp - described in the TCPHandler.vb class definition, model, and Design stage of project
-    Public NextTCP As TCPHandler = Nothing 'for next device comms
-    Public WFRootHandler As RootHandler = Nothing 'for root comms between root and device - this one used only if device is a root
-    Public WFRootHandlerClient As RootHandlerClient = Nothing
-    'Public WFRootReceiver As RootReceiver = Nothing 'this will need to be implemented as well to handle the client side of root comms
-
-    Public IS_ROOT As Boolean = False 'boolean to store if device is a root
-    Public ROOT_IP As String = "" 'stores the ip address of root node
-
-
-    Public CurrentWallet As Wallet = Nothing 'wallet instance that will be used for the application, only one wallet available for login at a time obviously
-    Public WFBlockchain As BlockChain ' blockchain instance for cross-form and background functionality
-
-    Public StatusLblText As String = SetSharedLblText("Offline", "No wallet logged in", "No wallet logged in") 'holds label text across all forms, using the set function makes a custom formatted string
-
-    Public WFTransactionPool As TransactionPool 'overflow transaction pool for the main pool, to allow for new transactions during mining to be sent and held above the MAX_TRANSACT_SIZE limitation of the previous list
+    Public Const GLOBAL_SERVER_PORT As Integer = 35000 'for receiving data inbound via non-root comms
+    Public Const GLOBAL_CLIENT_PORT As Integer = 36000 'for sending data outbound via non-root comms
+    Public Const ROOT_CLIENT_PORT As Integer = 37000 'for sending data outbound via root comms
+    Public Const ROOT_SERVER_PORT As Integer = 38000 'for receiving data inbound via root comms
     Public Const MAX_TRANSACT_SIZE As Byte = 30 'max transaction pool size to start mining sequence - this could be higher or lower based on network activity, for testing, cant be too high or too low (waste of time)
+    '
+    'END CONSTANT DATA
+    '
+
+
+    '
+    'NETWORK COMMS HANDLERS
+    '
+    Public PrevTCP As TCPHandler = Nothing 'for TCP comms between this node and prev node
+    Public NextTCP As TCPHandler = Nothing 'for TCP comms between this node and next node
+    Public WFRootHandler As RootHandler = Nothing 'for root comms between root and device - this one used only if current node is a root
+    Public WFRootHandlerClient As RootHandlerClient = Nothing 'used for receiving data from a root - comms between current node and root
+    Public WFConnectionHandler As ConnectionHandler = Nothing 'used to either join onto the network, or broadcast connection requests for new devices
+    Public ROOT_IP As String = "" 'stores the ip address of root node - used for initial root comms
+    '
+    'END NETWORK COMMS HANDLERS
+    '
+
+
+
+    '
+    'SHARED CLASS INSTANCES
+    '
+    Public CurrentWallet As Wallet 'wallet instance that will be used for the application, only one wallet available for login at a time obviously
+    Public WFBlockchain As BlockChain ' blockchain instance for cross-form and background functionality
+    Public WFTransactionPool As TransactionPool 'main transaction pool for the current block of the network
+    '
+    'END SHARED CLASSES
+    '
 
     '
     'PROGRAM FLAGS
     '
-    Public IsMining As Boolean = False 'flag for stopping threads and controlling program flow
-    Public StopMining As Boolean = False 'flag to stop mining taking place
-    Public IsSynchronised As Boolean = False 'overall program sychronised flag
+    Public IsRoot As Boolean = False 'boolean to store if device is a root
+    Public IsMining As Boolean = False 'flag for checking if node is currently mining in the background
+    Public StopMining As Boolean = False 'flag to stop mining taking place 
+    Public IsSynchronised As Boolean = False 'overall program sychronised flag - cannot do anything that adds to the chain if not synced
     Public IsLeaf As Boolean = False 'flag for connection request thread
     Public AppRunning As Boolean = True 'flag for saying whether user is in application - gets flipped if user clicks "Disconnect" button on any form
     Public IsMiner As Boolean = False 'flag for checking whether device is a miner or not, used for determining what proc to take during validation
     Public ReachedMiningSeq As Boolean = False 'flag to direct program and control what is allowed to take place while mining
     '
-    'PROGRAM FLAGS
+    'END PROGRAM FLAGS
+    '
+
+    '
+    'SHARED TRANSACTION AND BLOCK CLASS INSTANCE
     '
     Public CurrentBlock As Block = Nothing 'to store block instance that will be mined from the transaction pool
     Public ReceivedBlockConfirmations As Byte = 0 ' checking for node validations
 
+    Public UnvalidatedTransaction As Transaction = Nothing 'used to hold outbound transaction temporarily until newtransresp received from both devices
+    Public ReceivedTransactionConfirmations As Byte = 0 'flags to switch on when received confirmations from connected devices
+    '
+    'END SHARED TRANSACT AND BLOCK
+    '
+
+
     Public InboundJSONBuffer As New DataBufferQueue(Of String) 'max size 200 by default, for storing data that has come in from tcphandlers
-    Public OutboundJSONBuffer As New DataBufferQueue(Of String)
-    Public UnvalidatedTransaction As Transaction 'used to hold transaction temporarily until newtransresp received from both devices
-    Public ReceivedTransactionConfirmations As Byte = 0 'flags to switch on when received confirmations
+    Public InboundMonitorThread As New Thread(AddressOf MonitorRecvQueue) With {.IsBackground = True} 'thread that is used to run the monitoring sub in the background
 
 
-    Public ReceivedBlocks As List(Of Tuple(Of UInteger, Block)) 'received blocks from sync process, will move them to be a local variable in synchronisation.vb file later
-
-
-    Public ReadOnly HighPriorityRRs As List(Of String) = {"ValidateNewMinedBlockResponse", "TransmitNewBlockRequest", "ValidateNewMinedBlockRequest"}.ToList 'high priority messagetypes for sorting the priority of additions to the inbound queue
-
-    Public InboundMonitorThread As New Thread(AddressOf MonitorRecvQueue) With {.IsBackground = True}
-    Public OutboundMonitorThread As New Thread(AddressOf MonitorSndQueue) With {.IsBackground = True}
-
-    Public PreviousPointer As String = Nothing 'IPAddress of device connected previously (logically behind)
-    Public NextPointer As String = Nothing 'same as above but for device connected after (logically ahead)
-
-
-    Private Sub MonitorRecvQueue() 'this is the big boy processing sub - unfinished yet
-        'this sub will be no joke, absolute behemoth
+    Private Sub MonitorRecvQueue() 'behemoth sub - powerhouse of typical functionality
         While AppRunning
             If Not InboundJSONBuffer.IsEmpty And IsSynchronised Then
                 Dim Data As String = InboundJSONBuffer.Dequeue
@@ -78,20 +92,25 @@ Module AppGlobals
                     JsonObject = JObject.Parse(Data)
                 Catch ex As Exception
                     Continue While
-                    'something cocked up during translation from JSON - discard and continue
+                    'something messed up during translation from JSON - data not in json format, discard data and continue
                 End Try
 
                 'data received is in json format
-                If JsonObject("AppIDMessage") <> "WAYFARER_V1" Then
-                    Continue While 'error checking - delete request/response
-                End If
-                'json data has the correct appid - good
+                Try
+                    If JsonObject("AppIDMessage") <> "WAYFARER_V1" Then
+                        Continue While
+                    End If
+                Catch ex As Exception
+                    'data received is not in app-defined json format or appidmsg is wrong
+                End Try
+
+                'json data has the correct appidmsg - good
 
                 Dim DeviceIP As IPAddress
                 Try
                     DeviceIP = IPAddress.Parse(JsonObject("DeviceIP"))
                 Catch ex As Exception
-                    'the ip is messed up, so we get out of here
+                    'the ip is messed up or the json schema is wrong, so discard and exit
                     CustomMsgBox.ShowBox($"Error: received data from node is unreadable and no return data can be sent. Data: {Data}", "ERROR", False)
                     Continue While
                 End Try
@@ -99,9 +118,16 @@ Module AppGlobals
 
 
                 'at this point we have the orign ip and the data in json format with the correct appidmsg - can start processing
+                Try
+                    Dim Test As String = JsonObject("MessageType")
+                Catch ex As Exception
+                    Continue While 'data doesnt have a messagetype field, cannot process it
+                End Try
+
+                'when we start in this select-case, we have a valid IP address of sender to send things back to
                 Select Case JsonObject("MessageType")
 
-                    Case "NewTransactionRequest" 'done
+                    Case "NewTransactionRequest"
                         Dim NewTransReq As NewTransactionRequest
                         Dim NewTransResp As NewTransactionResponse
 
@@ -111,7 +137,7 @@ Module AppGlobals
                                 Throw New Exception 'either sender or recipient address is wrong - send a decline response to node
                             End If
                             'checking balance validity
-                            Dim TempBalance As Double = ScanBlockBalanceUpdate(NewTransReq.Sender) + GetTemporaryBalanceUpdate(NewTransReq.Sender)
+                            Dim TempBalance As Double = ScanBlockBalanceUpdate(NewTransReq.Sender) + GetTemporaryBalanceDelta(NewTransReq.Sender)
                             'alongside checking current real balance, also checks for any transactions that have been sent in the time since last block was mined, i.e. unconfirmed transacts
                             If TempBalance < NewTransReq.Quantity + NewTransReq.Fee Then
                                 Throw New Exception 'sender has insufficient funds to process this transaction, send a false response to discard transaction
@@ -129,14 +155,14 @@ Module AppGlobals
                         'transaction is OK at this point, can continue processing
                         Dim Transact As New Transaction(NewTransReq.Sender, NewTransReq.Recipient, NewTransReq.Quantity, NewTransReq.Fee, NewTransReq.Timestamp)
 
-                        If WFTransactionPool.GetPoolSize >= MAX_TRANSACT_SIZE OrElse IsMining Then 'pool is full - cannot accept transaction
+                        If WFTransactionPool.GetPoolSize >= MAX_TRANSACT_SIZE OrElse IsMining OrElse ReachedMiningSeq Then 'pool is full or mining - cannot accept transaction
                             NewTransResp = New NewTransactionResponse(False)
                         Else 'enough space to add new transaction, add to list
                             NewTransResp = New NewTransactionResponse(True)
                         End If
                         ReturnToSender(NewTransResp.GetJSONMessage, DeviceIP)
 
-                    Case "TransmitTransactionRequest" 'done
+                    Case "TransmitTransactionRequest"
                         Dim TransmitTransReq As TransmitTransactionRequest
                         Dim Transact As Transaction
                         Try
@@ -150,7 +176,7 @@ Module AppGlobals
                         WFTransactionPool.AddTransaction(Transact) 'this works because the newtransrequest has been validated by the previous devices
                         Continue While
 
-                    Case "TransmitNewBlockRequest" 'done
+                    Case "TransmitNewBlockRequest"
                         Dim TransmitNewBlkReq As TransmitNewBlockRequest
                         Dim RecvBlock As Block
                         Try
@@ -159,7 +185,7 @@ Module AppGlobals
                             CustomMsgBox.ShowBox($"Error in RecvQueue thread: {ex.Message}.", "ERROR", False)
                             Continue While 'request not in correct json format, we can just exit
                         End Try
-                        'assumption here is that this request will always have valid data and blocks - accepted limitation
+                        'assumption here is that this request will always have valid data and blocks - accepted limitation due to small number of nodes and not a partial mesh
                         RecvBlock = New Block(TransmitNewBlkReq.Hash,
                                               TransmitNewBlkReq.PrevHash,
                                               TransmitNewBlkReq.Index,
@@ -167,16 +193,21 @@ Module AppGlobals
                                               TransmitNewBlkReq.Timestamp,
                                               GetTransactionListFromString(TransmitNewBlkReq.Transactions),
                                               TransmitNewBlkReq.Miner)
+                        StopMining = True
                         ReachedMiningSeq = False
                         Dim TransmitBlkReq As New TransmitNewBlockRequest(RecvBlock) 'send the block along the network
                         SendDataAlong(TransmitBlkReq.GetJSONMessage, DeviceIP)
                         WFBlockchain.AddBlock(RecvBlock) 'add received block to the chain
+                        CurrentBlock = Nothing
+                        ReceivedBlockConfirmations = 0
+                        StopMining = False 'resetting for the next block mining
 
-                    Case "NewTransactionResponse" 'done
+
+                    Case "NewTransactionResponse"
                         Dim NewTransResp As NewTransactionResponse
                         Try
                             NewTransResp = JsonConvert.DeserializeObject(Of NewTransactionResponse)(Data)
-                        Catch ex As Exception
+                        Catch ex As Exception 'messed up while converting the json into a class, assume false response and invalidate the transaction
                             CustomMsgBox.ShowBox($"Error in RecvQueue thread: {ex.Message}. Transaction that you tried to send has failed validation. Please try again. Transaction details: {UnvalidatedTransaction}", "ERROR", False)
                             UnvalidatedTransaction = Nothing
                             ReceivedTransactionConfirmations = 0
@@ -188,9 +219,9 @@ Module AppGlobals
                             If ReceivedTransactionConfirmations = 0 Then
                                 ReceivedTransactionConfirmations = 1
                             ElseIf ReceivedTransactionConfirmations = 1 Then 'one received already, so both received now
-                                ReceivedTransactionConfirmations = 0
-                                UnvalidatedTransaction = Nothing
+                                ReceivedTransactionConfirmations = 0 'reset the counter
                                 Dim TransmitTransReq As New TransmitTransactionRequest(UnvalidatedTransaction)
+                                UnvalidatedTransaction = Nothing ' reset transaction
                                 SendToBothNodes(TransmitTransReq.GetJSONMessage) 'now clear to distribute to both devices
                                 'transaction accepted fully, so add to own transact pool
                                 WFTransactionPool.AddTransaction(UnvalidatedTransaction)
@@ -210,17 +241,18 @@ Module AppGlobals
                             StopMining = True
                             CurrentBlock = Nothing
                             ReceivedBlockConfirmations = 0
-                            Continue While 'request not in correct json format, we can just exit
+                            Continue While 'request not in correct json format, we can just exit and stop mining
                         End Try
+
                         If VNMBRp.Status = "Accept" Then
                             If ReceivedBlockConfirmations = 0 Then
-                                ReceivedBlockConfirmations = 1
+                                ReceivedBlockConfirmations = 1 'received first confirmation
                             ElseIf ReceivedBlockConfirmations = 1 Then
                                 ReceivedBlockConfirmations = 0 'both validated the block, can distribute and add the block to the chain
                                 StopMining = True
                                 ReachedMiningSeq = False
                                 Dim TransmitNewBlkReq As New TransmitNewBlockRequest(CurrentBlock)
-                                SendToBothNodes(TransmitNewBlkReq.GetJSONMessage)
+                                SendToBothNodes(TransmitNewBlkReq.GetJSONMessage) 'send the block to both connected nodes
                                 WFBlockchain.AddBlock(CurrentBlock)
                                 Thread.Sleep(250)
                                 StopMining = False 'to reset the variable but make sure the hashing gets kicked off first
@@ -235,22 +267,7 @@ Module AppGlobals
                         End If
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                    Case "ValidateNewMinedBlockRequest" 'work in progress
+                    Case "ValidateNewMinedBlockRequest"
 
                         Dim VNMBRq As ValidateNewMinedBlockRequest
                         Dim VNMBRp As ValidateNewMinedBlockResponse
@@ -261,7 +278,7 @@ Module AppGlobals
                             CustomMsgBox.ShowBox($"Error in RecvQueue thread: {ex.Message}. Sent back false message", "ERROR", False)
                             VNMBRp = New ValidateNewMinedBlockResponse(False)
                             ReturnToSender(VNMBRp.GetJSONMessage, DeviceIP)
-                            Continue While 'request not in correct json format, we can just exit
+                            Continue While 'request not in correct json format, we can just send a false response and continue
                         End Try
                         'at this point all block data is at least not erroneous
 
@@ -329,40 +346,69 @@ Module AppGlobals
                             Continue While
                         End Try
 
-
+                        'final validity check
                         If IsValidNextBlock(TempBlock, WFBlockchain.GetLastBlock) Then 'checks whether this block is correct against the current chain
+                            StopMining = True
+                            CurrentBlock = Nothing
+                            ReceivedBlockConfirmations = 0
                             VNMBRp = New ValidateNewMinedBlockResponse(True)
                             ReturnToSender(VNMBRp.GetJSONMessage, DeviceIP)
+                            StopMining = False
+
                         Else 'block invalid
                             VNMBRp = New ValidateNewMinedBlockResponse(False)
                             ReturnToSender(VNMBRp.GetJSONMessage, DeviceIP)
                             Continue While
                         End If
-                        'now need to stop mining and send response to origin miner
-                        ReachedMiningSeq = False
-                        StopMining = True
-                        CurrentBlock = Nothing
-                        ReceivedBlockConfirmations = 0
-
-                        VNMBRp = New ValidateNewMinedBlockResponse(True)
-                        ReturnToSender(VNMBRp.GetJSONMessage, DeviceIP)
-
-
-
-
-
-
-
-
-
 
 
 
                     Case "DisconnectRequest"
-                    Case "BlockResponse"
-                        'not sure if i need this still
+                        Dim DiscReq As DisconnectRequest
+                        Try
+                            DiscReq = JsonConvert.DeserializeObject(Of DisconnectRequest)(Data)
+                        Catch ex As Exception
+                            CustomMsgBox.ShowBox($"Error in RecvQueue thread: {ex.Message}. Deleted disconnect request.", "ERROR", False)
+                            Continue While
+                        End Try
+                        'here, need to check what kind of device this is
+                        If PrevTCP IsNot Nothing AndAlso PrevTCP.DeviceIP.Equals(DeviceIP) Then 'previous device quit
+                            'sent by prev device so need to check if sent by root
+                            If DiscReq.DeviceIP = ROOT_IP Then
+                                ROOT_IP = GetOwnIP().ToString
+                                IsRoot = True
+                                Try
+                                    WFRootHandler.Destruct() 'kills any existing threads and closes the sockets
+                                Catch ex As Exception
+                                End Try
+                                WFRootHandler = New RootHandler()
+                                WFRootHandler.Start() 'initialising the new root handler
+                                PrevTCP.KillHandler = True 'kills the existing listener
+                                PrevTCP = Nothing 'removes it
+                            Else 'device is now disconnected from the chain, need to go through connection process again
+                                PrevTCP.KillHandler = True
+                                IsSynchronised = False
+                                IsLeaf = False
+                                DiscReq = New DisconnectRequest() 'to send to the next device
+                                SendDataAlong(DiscReq.GetJSONMessage, DeviceIP)
+                                Try
+                                    WFRootHandler.Destruct() 'kills any existing threads and closes the sockets
+                                Catch ex As Exception
+                                End Try
+                                WFConnectionHandler = New ConnectionHandler()
+                                WFConnectionHandler.Start()
+                            End If
+                        ElseIf NextTCP IsNot Nothing AndAlso NextTCP.DeviceIP.Equals(DeviceIP) Then 'next device quit, so become leaf
+                            IsLeaf = True
+                            NextTCP.KillHandler = True
+                            NextTCP = Nothing
+                            WFConnectionHandler = New ConnectionHandler() 'start broadcasting connection requests
+                            WFConnectionHandler.Start() 'start broadcasting connection requests
+                        End If
+
+
                     Case Else
-                        Continue While 'received messagetype is invalid
+                        Continue While 'received messagetype is invalid - dodgy data
                 End Select
 
             End If
@@ -370,21 +416,10 @@ Module AppGlobals
     End Sub
 
 
-    Private Sub MonitorSndQueue() 'queue used only for tcp-handled data
-        While AppRunning
-            If IsSynchronised AndAlso Not OutboundJSONBuffer.IsEmpty AndAlso Not (PrevTCP Is Nothing AndAlso NextTCP Is Nothing) Then 'NAND of the two tcp handlers
-                'send things out of it one by one to both tcp connections and handle null exceptions
-                Dim Data As String = OutboundJSONBuffer.Dequeue
-                Try
-                    SendToBothNodes(Data)
-                Catch ex As Exception
-                    CustomMsgBox.ShowBox($"Error in SendQueue thread: {ex.Message}", "ERROR", False)
-                End Try
-            End If
-        End While
-    End Sub
 
-
+    '
+    'UTILITY FUNCTIONS/SUBS
+    '
     Public Sub ReturnToSender(Data As String, OriginIP As IPAddress) 'sends data back to where it came from
         If PrevTCP IsNot Nothing AndAlso Equals(OriginIP, PrevTCP.DeviceIP) Then
             PrevTCP?.SendData(Data)
@@ -419,10 +454,38 @@ Module AppGlobals
 
 
 
-    Public Sub DisconnectFromChain() 'incomplete
-        'send prev ptr and next ptr nodes a Disconnect request
-        'for each block on the current chain, check each block is saved in local
-        'if root, delete root status file from the directory as the next node becomes root
+    Public Sub DisconnectFromChain()
+        Dim DiscReq As New DisconnectRequest()
+        SendToBothNodes(DiscReq.GetJSONMessage)
+
+        IsSynchronised = False
+        StopMining = True
+        AppRunning = False
+
+        For Each Item As Block In WFBlockchain.Blockchain
+            Try
+                CreateFileFromBlock(Item)
+            Catch ex As Exception
+                Continue For
+            End Try
+        Next
+        If IsRoot Then
+            If NextTCP IsNot Nothing Then 'next device will become root
+                RemoveRootStatus()
+            Else 'last device on chain, so this one stays as root
+                SetRootStatus()
+            End If
+        End If 'saving root status
+
+        WFConnectionHandler?.Destruct()
+        WFRootHandler?.Destruct()
+        WFRootHandlerClient?.Destruct()
+        If PrevTCP IsNot Nothing Then
+            PrevTCP.KillHandler = True
+        End If
+        If NextTCP IsNot Nothing Then
+            NextTCP.KillHandler = True
+        End If
     End Sub
 
 
@@ -436,7 +499,7 @@ Module AppGlobals
     End Function
 
 
-    Function GetSHA256FromString(ByVal StringToHash As String) As String
+    Function GetSHA256FromString(StringToHash As String) As String
         Dim Hash As Byte() = SHA256.Create.ComputeHash(Encoding.UTF8.GetBytes(StringToHash))
         Return ByteArrayToHexString(Hash)
         'as it says, returns the sha256 digest of an input string in uppercase hex
@@ -454,9 +517,13 @@ Module AppGlobals
     End Function
 
 
-    Public Function SetSharedLblText(NetStatus As String, WalletName As String, Balance As String) As String
-        Return "STATUS:" & NetStatus & vbCrLf & "WALLET: " & WalletName & vbCrLf & "BALANCE: " & Balance
-        'used to set the lable on a form when entering and exiting a form instance
+    Public Function SetSharedLblText() As String
+        Dim Data As New StringBuilder
+        Data.AppendLine($"STATUS: {If(IsSynchronised, $"Online - {If(Not (IsRoot OrElse IsLeaf), "BRANCH", If(IsRoot, "ROOT", "LEAF"))}", "Offline")}")
+        Data.AppendLine($"WALLET: {If(CurrentWallet Is Nothing, "No wallet logged in", CurrentWallet.GetWalletName)}")
+        Data.Append($"BALANCE: {If(CurrentWallet IsNot Nothing, ScanBlockBalanceUpdate(CurrentWallet.GetPublicAddress), "No wallet logged in")}")
+        Return Data.ToString()
+        'used to set the label on a form when entering and exiting a form instance
     End Function
 
     Public Function IsValidStr(Data As String) As Boolean
@@ -492,16 +559,7 @@ Module AppGlobals
         Next
         Return DeviceIP 'gets ipv4 address of the node
     End Function
-
-    Public Function GetDeviceName() As String 'gets a hostname (max 64 chars)
-        Try
-            If Dns.GetHostName.Length > 64 Then
-                Return GetSHA256FromString(Dns.GetHostName)
-            Else
-                Return Dns.GetHostName 'return the registered device name if less than 64 length
-            End If
-        Catch ex As Exception
-            Return GetSHA256FromString(TimeString) 'handling potential errors (shouldnt occur)
-        End Try
-    End Function
+    '
+    'END UTILITY FUNCTIONS/SUBS
+    '
 End Module

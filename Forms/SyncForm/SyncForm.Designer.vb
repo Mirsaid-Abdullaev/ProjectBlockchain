@@ -26,7 +26,7 @@ Partial Class SyncForm
         Me.Title = New System.Windows.Forms.Label()
         Me.ConnectAndSync = New System.Windows.Forms.Button()
         Me.GetHelpManual = New System.Windows.Forms.Button()
-        Me.ProgressBar1 = New System.Windows.Forms.ProgressBar()
+        Me.SyncProgBar = New System.Windows.Forms.ProgressBar()
         Me.StatusTxt = New System.Windows.Forms.Label()
         Me.PictureBox1 = New System.Windows.Forms.PictureBox()
         CType(Me.PictureBox1, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -69,13 +69,13 @@ Partial Class SyncForm
         Me.GetHelpManual.Text = "ABOUT THE WAYFARER SYSTEM"
         Me.GetHelpManual.UseVisualStyleBackColor = False
         '
-        'ProgressBar1
+        'SyncProgBar
         '
-        Me.ProgressBar1.Location = New System.Drawing.Point(29, 366)
-        Me.ProgressBar1.Name = "ProgressBar1"
-        Me.ProgressBar1.Size = New System.Drawing.Size(631, 39)
-        Me.ProgressBar1.Style = System.Windows.Forms.ProgressBarStyle.Continuous
-        Me.ProgressBar1.TabIndex = 6
+        Me.SyncProgBar.Location = New System.Drawing.Point(29, 366)
+        Me.SyncProgBar.Name = "SyncProgBar"
+        Me.SyncProgBar.Size = New System.Drawing.Size(631, 39)
+        Me.SyncProgBar.Style = System.Windows.Forms.ProgressBarStyle.Continuous
+        Me.SyncProgBar.TabIndex = 6
         '
         'StatusTxt
         '
@@ -86,9 +86,7 @@ Partial Class SyncForm
         Me.StatusTxt.Name = "StatusTxt"
         Me.StatusTxt.Size = New System.Drawing.Size(631, 92)
         Me.StatusTxt.TabIndex = 7
-        Me.StatusTxt.Text = "STATUS OF SYNCHRONISATION: [insert status messages here]" & Global.Microsoft.VisualBasic.ChrW(13) & Global.Microsoft.VisualBasic.ChrW(10) & "(Progress bar below wil" &
-    "l load at the same rate as it takes to connect to, synchronise and update a node" &
-    ")" & Global.Microsoft.VisualBasic.ChrW(13) & Global.Microsoft.VisualBasic.ChrW(10)
+        Me.StatusTxt.Text = "BOOTING UP..."
         Me.StatusTxt.TextAlign = System.Drawing.ContentAlignment.MiddleCenter
         '
         'PictureBox1
@@ -109,7 +107,7 @@ Partial Class SyncForm
         Me.ClientSize = New System.Drawing.Size(694, 422)
         Me.Controls.Add(Me.PictureBox1)
         Me.Controls.Add(Me.StatusTxt)
-        Me.Controls.Add(Me.ProgressBar1)
+        Me.Controls.Add(Me.SyncProgBar)
         Me.Controls.Add(Me.GetHelpManual)
         Me.Controls.Add(Me.ConnectAndSync)
         Me.Controls.Add(Me.Title)
@@ -127,7 +125,7 @@ Partial Class SyncForm
     Friend WithEvents Title As Label
     Friend WithEvents ConnectAndSync As Button
     Friend WithEvents GetHelpManual As Button
-    Friend WithEvents ProgressBar1 As ProgressBar
+    Friend WithEvents SyncProgBar As ProgressBar
     Friend WithEvents StatusTxt As Label
     Friend WithEvents PictureBox1 As PictureBox
 End Class
