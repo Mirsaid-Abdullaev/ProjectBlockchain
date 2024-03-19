@@ -34,6 +34,9 @@ Module TransactionOperations
 
         Dim TransactList As New List(Of Transaction) 'final result list
         Try
+            If TransactData Is Nothing Then
+                Return Nothing
+            End If
             While CurrentPos <= TransactData.Length - 2 'the end counter is the index of the last char before the final "]" close
                 Dim CurrentChar As String = TransactData(CurrentPos) 'set the current char
                 If CurrentChar = "[" Then 'skip opening bracket and start collecting transaction string

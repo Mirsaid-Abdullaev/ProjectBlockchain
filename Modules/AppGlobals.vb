@@ -16,8 +16,8 @@ Module AppGlobals
     Public ReadOnly HighPriorityRRs As List(Of String) = {"ValidateNewMinedBlockResponse", "TransmitNewBlockRequest", "ValidateNewMinedBlockRequest", "DisconnectRequest"}.ToList 'high priority messagetypes for sorting the priority of additions to the inbound queue
     Public ReadOnly GENESIS_BLOCK As New Block("00422297B2426BB6B3D7B54D5AC18FA1166719B3C33F15C9AF439324EF623D5D", StrDup(64, "0"), 0, 355, StrDup(64, "0"), Nothing, StrDup(64, "0")) 'genesis block for all devices, hardcoded
     'constant block instance created at runtime as it is vital to keeping the blockchain integrity and error checking - due to daisy chain nature of blockchains, an error in the first block invalidates the entire chain
-    Public Const GLOBAL_SERVER_PORT As Integer = 35000 'for receiving data inbound via non-root comms
-    Public Const GLOBAL_CLIENT_PORT As Integer = 36000 'for sending data outbound via non-root comms
+    Public Const GLOBAL_CLIENT_PORT As Integer = 35000 'for sending data outbound via non-root comms
+    Public Const GLOBAL_SERVER_PORT As Integer = 36000 'for receiving data inbound via non-root comms
     Public Const ROOT_CLIENT_PORT As Integer = 37000 'for sending data outbound via root comms
     Public Const ROOT_SERVER_PORT As Integer = 38000 'for receiving data inbound via root comms
     Public Const MAX_TRANSACT_SIZE As Byte = 30 'max transaction pool size to start mining sequence - this could be higher or lower based on network activity, for testing, cant be too high or too low (waste of time)

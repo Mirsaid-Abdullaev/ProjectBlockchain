@@ -12,7 +12,7 @@ Public Class TCPHandler
     Public Property KillHandler As Boolean = False
     Public Sub New(DeviceIP As IPAddress)
         Client = New TcpClient()
-        Server = New TcpListener(DeviceIP, GLOBAL_CLIENT_PORT) 'sets the server to listen to the specified device ip, on the client port
+        Server = New TcpListener(DeviceIP, GLOBAL_SERVER_PORT) 'sets the server to listen to the specified device ip, on the client port
         Me.DeviceIP = DeviceIP
 
         ServerThread = New Thread(AddressOf ReceiveData) With {.IsBackground = True} 'server listens on the background thread
@@ -66,8 +66,11 @@ Public Class TCPHandler
         Catch ex As Exception
             Exit Sub
         Finally
-            Client.Close() 'disposes of the client instance
-            Client.Dispose()
+            Try
+                Client.Close() 'disposes of the client instance
+                Client.Dispose()
+            Catch ex As Exception
+            End Try
         End Try
     End Sub
 

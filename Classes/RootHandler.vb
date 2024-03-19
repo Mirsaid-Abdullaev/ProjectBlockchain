@@ -3,6 +3,7 @@ Imports System.Net.Sockets
 Imports System.Text
 Imports System.Threading
 Imports Newtonsoft.Json.Linq
+Imports Newtonsoft.Json
 
 Public Class RootHandler
     Private UDPSender As UdpClient 'udp client used to send data to client
@@ -15,7 +16,7 @@ Public Class RootHandler
     Private ReadOnly ResponseManagementThread As Thread 'thread to send data to devices on
     Private NodeQueue As New DataBufferQueue(Of String) 'queue of devices to synchronise (shouldnt be required as the connection process is linear but just in case)
     Public Sub New() 'sets the threads and the receiving client
-        UDPReceiver = New UdpClient(RootEP) With {.EnableBroadcast = False}
+        UDPReceiver = New UdpClient(ROOT_SERVER_PORT) With {.EnableBroadcast = False}
         RootListenThread = New Thread(AddressOf ListenForSyncReq) With {.IsBackground = True} 'root taking requests
         ResponseManagementThread = New Thread(AddressOf CheckDeviceQueue) With {.IsBackground = True} 'root responses to the found devices
     End Sub
@@ -48,27 +49,31 @@ Public Class RootHandler
         Dim TempBlockchainList As List(Of Block) = WFBlockchain.Blockchain.GetRange(StartIndex, WFBlockchain.Blockchain.Count - StartIndex)
         'gets a static list of the current blocks on the network to send to the client
         Try
-            UDPSender.Close()
+            If UDPSender IsNot Nothing Then
+                UDPSender.Close()
+                UDPSender.Dispose()
+            End If
         Catch ex As Exception
             UDPSender = Nothing
         End Try
         'resetting the udpclient for sending to the new endpoint
-        Dim EndPoint As New IPEndPoint(NodeAddress, ROOT_SERVER_PORT)
-        UDPSender = New UdpClient(EndPoint)
+        Dim EP As New IPEndPoint(NodeAddress, ROOT_SERVER_PORT)
+        UDPSender = New UdpClient(ROOT_CLIENT_PORT)
 
         'sends the blocks on the network to the client one by one using the correct json schema
         For Each Item As Block In TempBlockchainList
             Dim BlockResponse As New BlockResponse(Item, True)
             Dim SndData As String = BlockResponse.GetJSONMessage
             Dim SndBytes As Byte() = Encoding.UTF8.GetBytes(SndData)
-            UDPSender.Send(SndBytes, SndBytes.Length)
+            UDPSender.Send(SndBytes, SndBytes.Length, EP)
         Next
 
         'sends the transaction pool to the client in the schema specified
         Dim TransactPoolResponse As New TransactionPoolResponse(True, WFTransactionPool)
         Dim Bytes As Byte() = Encoding.UTF8.GetBytes(TransactPoolResponse.GetJSONMessage)
-        UDPSender.Send(Bytes, Bytes.Length)
+        UDPSender.Send(Bytes, Bytes.Length, EP)
         UDPSender.Close() 'closes the client socket after transmission
+        UDPSender.Dispose()
     End Sub
 
     Private Sub ListenForSyncReq() 'registers when a new device sends a syncrequest
@@ -89,8 +94,9 @@ Public Class RootHandler
                 Dim MessageType As String = JsonObject("MessageType").ToString
                 Select Case MessageType 'check for a correct data type
                     Case "SyncRequest" 'add the device to the node queue for data sending
-                        NodeQueue.Enqueue(String.Join(",", {JsonObject("DeviceIP"), JsonObject("StartBlock").ToString})) 'device IP and startindex added, split by commas
-                        SendSyncResponse(JsonObject("DeviceIP"), JsonObject("StartBlock"))
+                        Dim SyncReq As SyncRequest = JsonConvert.DeserializeObject(Of SyncRequest)(RecvData)
+                        NodeQueue.Enqueue(String.Join(",", {SyncReq.DeviceIP, SyncReq.StartBlock})) 'device IP and startindex added, split by commas
+                        SendSyncResponse(SyncReq.DeviceIP, SyncReq.StartBlock)
                         'need to send this device all the blocks it needs for synchronisation
                     Case Else
                         Continue While 'something else was received here, ignore
@@ -109,28 +115,43 @@ Public Class RootHandler
 
         Dim EP As New IPEndPoint(NodeAddress, ROOT_SERVER_PORT)
         Try
-            UDPResponder.Close()
-            UDPResponder.Dispose()
+            If UDPResponder IsNot Nothing Then
+                UDPResponder.Close()
+                UDPResponder.Dispose()
+            End If
         Catch ex As Exception
             UDPResponder = Nothing
         End Try
 
-        UDPResponder = New UdpClient(EP)
-        UDPResponder.Send(SndBytes, SndBytes.Length) 'sends a syncresponse to the device
+        UDPResponder = New UdpClient(ROOT_CLIENT_PORT)
+        UDPResponder.Send(SndBytes, SndBytes.Length, EP) 'sends a syncresponse to the device
     End Sub
 
     Public Sub Destruct() 'disposes of the sockets used by UDP clients and kills the handler
         KillHandler = True
         Try
-            UDPReceiver.Close()
-            UDPReceiver.Dispose()
+            If UDPReceiver IsNot Nothing Then
+                UDPReceiver.Close()
+                UDPReceiver.Dispose()
+            End If
         Catch ex As Exception
         End Try
 
         Try
-            UDPSender.Close()
-            UDPSender.Dispose()
+            If UDPSender IsNot Nothing Then
+                UDPSender.Close()
+                UDPSender.Dispose()
+            End If
         Catch ex As Exception
+            UDPSender = Nothing
+        End Try
+        Try
+            If UDPResponder IsNot Nothing Then
+                UDPResponder.Close()
+                UDPResponder.Dispose()
+            End If
+        Catch ex As Exception
+            UDPResponder = Nothing
         End Try
     End Sub
 End Class

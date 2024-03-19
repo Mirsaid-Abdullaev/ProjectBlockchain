@@ -8,8 +8,8 @@ Imports Newtonsoft.Json
 Public Class RootHandlerClient
     Private ReadOnly UDPSender As UdpClient
     Private ReadOnly UDPReceiver As UdpClient
-    Private ReadOnly ReceivingEP As New IPEndPoint(RootAddress, ROOT_SERVER_PORT)
-    Private ReadOnly RootEP As New IPEndPoint(RootAddress, ROOT_CLIENT_PORT) 'endpoint for root comms
+    Private ReadOnly ReceivingEP As New IPEndPoint(RootAddress, ROOT_CLIENT_PORT)
+    Private ReadOnly RootEP As New IPEndPoint(RootAddress, ROOT_SERVER_PORT) 'endpoint for root comms
 
     Private ReadOnly RootAddress As IPAddress 'address of the root node
     Private Property KillHandler As Boolean = False 'flag to stop thread 
@@ -50,12 +50,12 @@ Public Class RootHandlerClient
         End If
         'if the conversion succeeded, rootaddress now holds the root ip
 
-        UDPReceiver = New UdpClient()
-        UDPSender = New UdpClient(RootEP)
+        UDPReceiver = New UdpClient(ROOT_SERVER_PORT)
+        UDPSender = New UdpClient(ROOT_CLIENT_PORT)
 
         Dim SyncReq As New SyncRequest(StartBlock)
         Dim SndBytes As Byte() = Encoding.UTF8.GetBytes(SyncReq.GetJSONMessage)
-        UDPSender.Send(SndBytes, SndBytes.Length) 'sends a sync request to the root
+        UDPSender.Send(SndBytes, SndBytes.Length, RootEP) 'sends a sync request to the root
 
         ExpectedDataItems = 1000000 'to begin with, set to 1 million to allow the listen loop to run without problems, but this will change once a sync response is received
         ReceivedBlocks = New List(Of String) 'init list
@@ -114,13 +114,17 @@ Public Class RootHandlerClient
         KillHandler = True
 
         Try
-            UDPReceiver.Close()
-            UDPReceiver.Dispose()
+            If UDPReceiver IsNot Nothing Then
+                UDPReceiver.Close()
+                UDPReceiver.Dispose()
+            End If
         Catch ex As Exception
         End Try
         Try
-            UDPSender.Close()
-            UDPSender.Dispose()
+            If UDPSender IsNot Nothing Then
+                UDPSender.Close()
+                UDPSender.Dispose()
+            End If
         Catch ex As Exception
         End Try
     End Sub

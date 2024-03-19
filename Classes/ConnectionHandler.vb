@@ -18,17 +18,17 @@ Public Class ConnectionHandler
     Private Property KillHandler As Boolean = False 'flag for destructor
     Public Sub Start() 'initialises the threads based on program flags
         If IsLeaf AndAlso IsSynchronised Then 'sending connection requests (as you are the leaf node and synchronised to the chain now)
-            UDPSender = New UdpClient(BroadcastEP) With {.EnableBroadcast = True}
+            UDPSender = New UdpClient(GLOBAL_CLIENT_PORT) With {.EnableBroadcast = True}
             BroadcastThread = New Thread(AddressOf BroadcastConnectionRequest) With {.IsBackground = True}
             BroadcastThread.Start()
 
             'also listening for connection responses
-            UDPReceiver = New UdpClient(RemoteEP) With {.EnableBroadcast = False}
+            UDPReceiver = New UdpClient(GLOBAL_SERVER_PORT) With {.EnableBroadcast = True}
             ConRespThread = New Thread(AddressOf ListenForResponse) With {.IsBackground = True}
             ConRespThread.Start()
 
         ElseIf Not IsSynchronised Then 'listening for an incoming connection request only, as you are not synchronised or the leaf node
-            UDPReceiver = New UdpClient(RemoteEP) With {.EnableBroadcast = False}
+            UDPReceiver = New UdpClient(GLOBAL_SERVER_PORT) With {.EnableBroadcast = True}
             UDPSender = Nothing
             ListenerThread = New Thread(AddressOf ListenForBroadcasts) With {.IsBackground = True}
             ListenerThread.Start()
@@ -60,7 +60,7 @@ Public Class ConnectionHandler
                             Continue While 'skips the current loop and keeps listening for broadcasts
                         End If
 
-                        ROOT_IP = JsonObject("RootAddress") 'pulls down the root ip from the request to use later
+                        ROOT_IP = ConReq.RootAddress 'pulls down the root ip from the request to use later
                         SendConnectionResponse(ConReq.DeviceIP)
                         'sends a response for the node to allow them to begin a tcp/ip session with this node for bidirectional comms
                         Exit While 'closes the udp receiver and kills it.
@@ -77,20 +77,25 @@ Public Class ConnectionHandler
     Private Sub SendConnectionResponse(DeviceIP As String) 'sends the conn response to the leaf and initialises the tcp handler for prevptr
         Dim ConResp As New ConnectionResponse(True)
         Dim Bytes() As Byte = Encoding.UTF8.GetBytes(ConResp.GetJSONMessage) 'gets the byte array of the message (response) to send to the broadcaster
+        Dim Address As IPAddress
+        Dim EP As IPEndPoint = Nothing
         Try
-            Dim Address As IPAddress = IPAddress.Parse(DeviceIP)
-            Dim EP As New IPEndPoint(Address, GLOBAL_CLIENT_PORT)
+            Address = IPAddress.Parse(DeviceIP)
+            EP = New IPEndPoint(Address, GLOBAL_CLIENT_PORT)
             Try
                 UDPSender.Close()
                 UDPSender.Dispose()
             Catch ex As Exception
+                UDPSender = Nothing
             End Try
             'resetting the UDP sender just in case it is bound to another socket still
 
-            UDPSender = New UdpClient(EP) With {.EnableBroadcast = True}
-            UDPSender.Send(Bytes, Bytes.Length)
+            UDPSender = New UdpClient(GLOBAL_CLIENT_PORT) With {.EnableBroadcast = True}
+            UDPSender.Send(Bytes, Bytes.Length, EP)
         Catch ex As Exception
-            UDPSender.Send(Bytes, Bytes.Length) 'try one more time just in case
+            If EP IsNot Nothing Then
+                UDPSender.Send(Bytes, Bytes.Length, EP) 'try one more time just in case
+            End If
         End Try
         PrevTCP = New TCPHandler(IPAddress.Parse(DeviceIP))
         IsLeaf = True 'create the referential link between these nodes
@@ -101,7 +106,7 @@ Public Class ConnectionHandler
             Try
                 Dim ConReq As New ConnectionRequest()
                 Dim Bytes() As Byte = Encoding.UTF8.GetBytes(ConReq.GetJSONMessage)
-                UDPSender.Send(Bytes, Bytes.Length)
+                UDPSender.Send(Bytes, Bytes.Length, BroadcastEP)
                 Thread.Sleep(50)
             Catch ex As Exception
                 Continue While
@@ -127,7 +132,8 @@ Public Class ConnectionHandler
                 Dim MessageType As String = JsonObject("MessageType").ToString
                 Select Case MessageType 'check what kind of message arrived
                     Case "ConnectionResponse"
-                        Dim DeviceIP As IPAddress = IPAddress.Parse(JsonObject("DeviceIP"))
+                        Dim ConResp As ConnectionResponse = JsonConvert.DeserializeObject(Of ConnectionResponse)(RecvData)
+                        Dim DeviceIP As IPAddress = IPAddress.Parse(ConResp.DeviceIP)
                         IsLeaf = False
                         NextTCP = New TCPHandler(DeviceIP) 'create the referential link between devices
                     Case Else
@@ -143,15 +149,21 @@ Public Class ConnectionHandler
     Public Sub Destruct() 'disposes of the sockets used by UDP clients and kills the handler
         KillHandler = True
         Try
-            UDPReceiver.Close()
-            UDPReceiver.Dispose()
+            If UDPReceiver IsNot Nothing Then
+                UDPReceiver.Close()
+                UDPReceiver.Dispose()
+            End If
         Catch ex As Exception
+            UDPReceiver = Nothing
         End Try
 
         Try
-            UDPSender.Close()
-            UDPSender.Dispose()
+            If UDPSender IsNot Nothing Then
+                UDPSender.Close()
+                UDPSender.Dispose()
+            End If
         Catch ex As Exception
+            UDPSender = Nothing
         End Try
     End Sub
 End Class
