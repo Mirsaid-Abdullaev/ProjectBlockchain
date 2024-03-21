@@ -110,10 +110,10 @@ Public Class Block
 
 
     Public Sub New() 'for programmatic declaration of new blocks AFTER sync process
-        Index = WFBlockchain.GetLastBlock.GetIndex + 1
+        Index = WFBlockchain.LastBlock.GetIndex + 1
         Nonce = 0
         Transactions = New List(Of Transaction)
-        PrevHash = WFBlockchain.GetLastBlock.GetHash
+        PrevHash = WFBlockchain.LastBlock.GetHash
     End Sub
 
     Public Sub New(Hash As String, PrevHash As String, Index As UInteger, Nonce As UInteger, Timestamp As String, Transactions As List(Of Transaction), Miner As String) 'only for loading already-created blocks in

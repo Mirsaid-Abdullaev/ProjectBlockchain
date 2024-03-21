@@ -34,7 +34,7 @@ Public Class TransactionPool
         While IsMining And AppRunning And Not StopMining
             Continue While
         End While
-        If Not IsValidNextBlock(CurrentBlock, WFBlockchain.GetLastBlock) Or StopMining Then
+        If Not IsValidNextBlock(CurrentBlock, WFBlockchain.LastBlock) Or StopMining Then
             Exit Sub 'something would have needed to be messed up to reach this code - this is just a precaution
         End If
         Dim VNMBRq As New ValidateNewMinedBlockRequest(CurrentBlock) 'initialises a request to send to its peers

@@ -40,14 +40,14 @@ Public Class BlockchainExplorerF
             End If
 
             Try
-                If LastBlockchainSize = WFBlockchain.GetLastBlock.GetIndex Then
+                If LastBlockchainSize = WFBlockchain.LastBlock.GetIndex Then
                     Continue While 'if the last size is the same as current size, nothing changed, so just continue
                 Else
                     LastBlockchainSize += 1
                 End If
             Catch ex As Exception 'this is used in the rare case that the thread catches a block halfway through being added to the underlying blockchain class's list, and throws an index exception
                 Thread.Sleep(2000) 'the thread allows a 2 second wait for the block to be added successfully
-                If LastBlockchainSize = WFBlockchain.GetLastBlock.GetIndex Then 'try again
+                If LastBlockchainSize = WFBlockchain.LastBlock.GetIndex Then 'try again
                     Continue While
                 Else
                     LastBlockchainSize += 1

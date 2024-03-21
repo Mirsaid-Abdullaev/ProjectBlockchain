@@ -2,7 +2,8 @@
 
     Private Sub GetWalletView_Click(sender As Object, e As EventArgs) Handles GetWalletView.Click
         Me.Hide()
-        WalletBaseView.ShowDialog()
+        Dim WalView As New WalletBaseView
+        WalView.ShowDialog()
         Me.StatusLbl.Text = SetSharedLblText()
         Try
             Me.Show()
@@ -29,7 +30,8 @@
             Exit Sub
         End If
         Me.Hide()
-        SendingScreen.ShowDialog()
+        Dim SendScr As New SendingScreen
+        SendScr.ShowDialog()
         Me.StatusLbl.Text = SetSharedLblText()
         Try
             Me.Show()
@@ -40,7 +42,8 @@
 
     Private Sub GetTransactionPool_Click(sender As Object, e As EventArgs) Handles GetTransactionPool.Click
         Me.Hide()
-        TransactPoolView.ShowDialog()
+        Dim TransPoolView As New TransactPoolView
+        TransPoolView.ShowDialog()
         Me.StatusLbl.Text = SetSharedLblText()
         Try
             Me.Show()
@@ -51,7 +54,8 @@
 
     Private Sub GetViewingForm_Click(sender As Object, e As EventArgs) Handles GetViewingForm.Click
         Me.Hide()
-        BaseViewingForm.ShowDialog()
+        Dim BaseFrm As New BaseViewingForm
+        BaseFrm.ShowDialog()
         Me.StatusLbl.Text = SetSharedLblText()
         Try
             Me.Show()

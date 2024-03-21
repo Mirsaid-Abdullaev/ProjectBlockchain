@@ -282,7 +282,7 @@ Module AppGlobals
                         End Try
                         'at this point all block data is at least not erroneous
 
-                        If VNMBRq.Index <> WFBlockchain.GetLastBlock.GetIndex + 1 Then
+                        If VNMBRq.Index <> WFBlockchain.LastBlock.GetIndex + 1 Then
                             CustomMsgBox.ShowBox($"Error in RecvQueue thread: Index of block is wrong - rogue block. Sent back false message", "ERROR", False)
                             VNMBRp = New ValidateNewMinedBlockResponse(False)
                             ReturnToSender(VNMBRp.GetJSONMessage, DeviceIP)
@@ -347,7 +347,7 @@ Module AppGlobals
                         End Try
 
                         'final validity check
-                        If IsValidNextBlock(TempBlock, WFBlockchain.GetLastBlock) Then 'checks whether this block is correct against the current chain
+                        If IsValidNextBlock(TempBlock, WFBlockchain.LastBlock) Then 'checks whether this block is correct against the current chain
                             StopMining = True
                             CurrentBlock = Nothing
                             ReceivedBlockConfirmations = 0

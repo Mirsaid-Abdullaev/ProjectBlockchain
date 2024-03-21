@@ -183,4 +183,3 @@ Public Class Wallet
         Me.Balance = ScanBlockBalanceUpdate(Me.PublicAddress)
     End Sub
 End Class
-

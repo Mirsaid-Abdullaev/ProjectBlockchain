@@ -14,7 +14,8 @@
 
     Private Sub BlockchainExpF_Click(sender As Object, e As EventArgs) Handles BlockchainExpF.Click
         Me.Hide()
-        BlockchainExplorerF.ShowDialog()
+        Dim BExplorer As New BlockchainExplorerF
+        BExplorer.ShowDialog()
         Me.StatusLbl.Text = SetSharedLblText()
         Try
             Me.Show()
@@ -33,7 +34,8 @@
 
     Private Sub BlockchainExpH_Click(sender As Object, e As EventArgs) Handles BlockchainExpH.Click
         Me.Hide()
-        BlockchainExplorerH.ShowDialog()
+        Dim BExplorer As New BlockchainExplorerH
+        BExplorer.ShowDialog()
         Me.StatusLbl.Text = SetSharedLblText()
         Try
             Me.Show()
@@ -46,7 +48,8 @@
 
     Private Sub NetworkStatusView_Click(sender As Object, e As EventArgs) Handles NetworkStatusView.Click
         Me.Hide()
-        NetStatusView.ShowDialog()
+        Dim NetView As New NetStatusView
+        NetView.ShowDialog()
         Me.StatusLbl.Text = SetSharedLblText()
         Try
             Me.Show()

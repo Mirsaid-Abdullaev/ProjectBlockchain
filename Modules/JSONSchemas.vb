@@ -229,7 +229,7 @@ Module RequestsResponses
         Public ReadOnly Property ExpectedBlocks As UInteger
         Public Sub New(Status As String, StartBlock As UInteger)
             MyBase.New("SyncResponse", Status)
-            ExpectedBlocks = WFBlockchain.GetLastBlock.GetIndex - StartBlock + 1
+            ExpectedBlocks = WFBlockchain.LastBlock.GetIndex - StartBlock + 1
         End Sub
         Public Overrides Function GetJSONMessage() As String
             Return JsonConvert.SerializeObject(Me)

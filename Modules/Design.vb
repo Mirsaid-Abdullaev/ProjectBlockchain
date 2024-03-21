@@ -10,6 +10,7 @@ Module Design
         Protected Friend Overloads Property DialogResult As Boolean = False
 
         Public Sub New(Optional Title As String = Nothing, Optional ShowCancel As Boolean = True)
+            Dim resources As New System.ComponentModel.ComponentResourceManager(GetType(SyncForm))
             If Not Title = Nothing Then
                 Me.Text = Title 'allows for custom user title to be input
             Else
@@ -36,7 +37,7 @@ Module Design
             Me.Controls.Add(MessageTxt)
             Me.Controls.Add(ButtonOK)
             'add controls to the form
-            Me.Icon = New Icon("C:\Users\abdul\Downloads\ProjectBlockchain\My Project\AppIcon.ico")
+            Me.Icon = CType(resources.GetObject("$this.Icon"), System.Drawing.Icon) 'sets the icon of the dialog box
             'set the icon
             AddHandler ButtonOK.Click, AddressOf OKButton_Click 'make a handler for the OK button
             AddHandler MessageTxt.KeyDown, AddressOf MessageTextBox_KeyDown 'make a handler for user clicking Enter on the messagebox

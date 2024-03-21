@@ -8,7 +8,7 @@ Public Class BlockChain
             Return Chain
         End Get
     End Property 'getter for the underlying chain
-    Public ReadOnly Property GetLastBlock As Block
+    Public ReadOnly Property LastBlock As Block
         Get
             Return Chain.Last() 'returns the last block on the chain
         End Get
