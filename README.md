@@ -186,146 +186,159 @@ in the cross-device communications to standardise the data flows from device to 
 provided some sample data for each of the fields in the JSON schema, to give a feel for what kind of typical data will
 be sent and received by devices using this application. These are encapsulated in their separate JSONSchemas module
 within the source code file [JSONSchemas.vb](./Modules/JSONSchemas.vb).</span>
-## REQUEST SCHEMAS (and some sample data as examples) 
+## REQUEST SCHEMAS (and some sample data as examples)
 **ConnectionRequest**
-<br>
-<span>{<br>"MessageType" : "ConnectionRequest",
-                               <br>"AppIDMessage" : "WAYFARER_V1",
-                               <br>"DeviceIP" : "192.168.1.12",
-                               <br>"RootAddress" : "192.168.1.71"
-                               <br>}</span>
-<br><br>
+```
+{
+"MessageType" : "ConnectionRequest",
+"AppIDMessage" : "WAYFARER_V1",
+"DeviceIP" : "192.168.1.12",
+"RootAddress" : "192.168.1.71"
+}
+```
 **SyncRequest**
-<br>
-<span>{<br>"MessageType" : "SyncRequest",
-                               <br>    "AppIDMessage" : "WAYFARER_V1",
-                               <br>"DeviceIP" : "192.168.1.12",
-                               <br>"RootAddress" : "192.168.1.71",
-                               <br>"StartBlock" : "253"
-                               <br>}</span>
-<br><br>
+```
+{
+"MessageType" : "SyncRequest",
+"AppIDMessage" : "WAYFARER_V1",
+"DeviceIP" : "192.168.1.12",
+"RootAddress" : "192.168.1.71",
+"StartBlock" : "253"
+}
+```
 **NewTransactionRequest**
-<br>
-<span>{<br>"MessageType" : "NewTransactionRequest",
-                               <br>"AppIDMessage" : "WAYFARER_V1",
-                               <br>"DeviceIP" : "192.168.1.12",
-                               <br>"RootAddress" : "192.168.1.71",
-                               <br>"Timestamp" : "1717085175123",
-                               <br>"Sender" : "AE283F...C10",
-                               <br>"Recipient" : "75483...BA1",
-                               <br>"Quantity" : "95",
-                               <br>"Fee" : "5"
-                               <br>}</span>
-<br><br>
+```
+{
+"MessageType" : "NewTransactionRequest",
+"AppIDMessage" : "WAYFARER_V1",
+"DeviceIP" : "192.168.1.12",
+"RootAddress" : "192.168.1.71",
+"Timestamp" : "1717085175123",
+"Sender" : "AE283F...C10",
+"Recipient" : "75483...BA1",
+"Quantity" : "95",
+"Fee" : "5"
+}
+```
 **ValidateNewMinedBlockRequest**
-<br>
-<span>{<br>"MessageType" : "ValidateNewMinedBlockRequest",
-                               <br>"AppIDMessage" : "WAYFARER_V1",
-                               <br>"DeviceIP" : "192.168.1.12",
-                               <br>"RootAddress" : "192.168.1.71",
-                               <br>"Timestamp" : "1717085175123",
-                               <br>"PrevHash" : "12FF3...BDD",
-                               <br>"Hash" : "95201...29C",
-                               <br>"Index" : "95",
-                               <br>"Nonce" : "120021",
-                               <br>"Transactions" : "[transact1],[transact2]...[transactN]",
-                               <br>"Miner" : "AE283F...C10"
-                               <br>}</span>
-<br><br>
+```
+{
+"MessageType" : "ValidateNewMinedBlockRequest",
+"AppIDMessage" : "WAYFARER_V1",
+"DeviceIP" : "192.168.1.12",
+"RootAddress" : "192.168.1.71",
+"Timestamp" : "1717085175123",
+"PrevHash" : "12FF3...BDD",
+"Hash" : "95201...29C",
+"Index" : "95",
+"Nonce" : "120021",
+"Transactions" : "[transact1],[transact2]...[transactN]",
+"Miner" : "AE283F...C10"
+}
+```
 **TransmitNewBlockRequest**
-<br>
-<span>{<br>"MessageType" : "TransmitNewBlockRequest",
-                               <br>"AppIDMessage" : "WAYFARER_V1",
-                               <br>"DeviceIP" : "192.168.1.12",
-                               <br>"RootAddress" : "192.168.1.71",
-                               <br>"Timestamp" : "1717085175123",
-                               <br>"PrevHash" : "12FF3...BDD",
-                               <br>"Hash" : "95201...29C",
-                               <br>"Index" : "95",
-                               <br>"Nonce" : "120021",
-                               <br>"Transactions" : "[transact1],[transact2]...[transactN]",
-                               <br>"Miner" : "AE283F...C10"
-                               <br>}</span>
-<br><br>
+```
+{
+"MessageType" : "TransmitNewBlockRequest",
+"AppIDMessage" : "WAYFARER_V1",
+"DeviceIP" : "192.168.1.12",
+"RootAddress" : "192.168.1.71",
+"Timestamp" : "1717085175123",
+"PrevHash" : "12FF3...BDD",
+"Hash" : "95201...29C",
+"Index" : "95",
+"Nonce" : "120021",
+"Transactions" : "[transact1],[transact2]...[transactN]",
+"Miner" : "AE283F...C10"
+}
+```
 **TransmitTransactionRequest**
-<br>
-<span>{<br>"MessageType" : "TransmitTransactionRequest",
-                               <br>"AppIDMessage" : "WAYFARER_V1",
-                               <br>"DeviceIP" : "192.168.1.12",
-                               <br>"RootAddress" : "192.168.1.71",
-                               <br>"Timestamp" : "1717085175123",
-                               <br>"Sender" : "AE283F...C10",
-                               <br>"Recipient" : "75483...BA1",
-                               <br>"Quantity" : "95",
-                               <br>"Fee" : "5"
-                               <br>}</span>
-<br><br>
+```
+{
+"MessageType" : "TransmitTransactionRequest",
+"AppIDMessage" : "WAYFARER_V1",
+"DeviceIP" : "192.168.1.12",
+"RootAddress" : "192.168.1.71",
+"Timestamp" : "1717085175123",
+"Sender" : "AE283F...C10",
+"Recipient" : "75483...BA1",
+"Quantity" : "95",
+"Fee" : "5"
+}
+```
 **DisconnectRequest**
-<br>
-<span>{<br>"MessageType" : "DisconnectRequest",
-                               <br>"AppIDMessage" : "WAYFARER_V1",
-                               <br>"DeviceIP" : "192.168.1.12",
-                               <br>"RootAddress" : "192.168.1.71"
-                               <br>}</span>
-<br>
+```
+{
+"MessageType" : "DisconnectRequest",
+"AppIDMessage" : "WAYFARER_V1",
+"DeviceIP" : "192.168.1.12",
+"RootAddress" : "192.168.1.71"
+}
+```
 ## RESPONSE SCHEMAS (and some sample data as examples)
 **ConnectionResponse**
-<br>
-<span>{<br>"MessageType" : "ConnectionResponse",
-                               <br>"AppIDMessage" : "WAYFARER_V1",
-                               <br>"DeviceIP" : "192.168.1.12",
-                               <br>"Status" : "Accept"
-                               <br>}</span>
-<br><br>
+```
+{
+"MessageType" : "ConnectionResponse",
+"AppIDMessage" : "WAYFARER_V1",
+"DeviceIP" : "192.168.1.12",
+"Status" : "Accept"
+}
+```
 **SyncResponse**
-<br>
-<span>{<br>"MessageType" : "SyncResponse",
-                               <br>"AppIDMessage" : "WAYFARER_V1",
-                               <br>"DeviceIP" : "192.168.1.12",
-                               <br>"Status" : "Accept",
-                               <br>"ExpectedBlocks" : "152"
-                               <br>}</span>
-<br><br>
+```
+{
+"MessageType" : "SyncResponse",
+"AppIDMessage" : "WAYFARER_V1",
+"DeviceIP" : "192.168.1.12",
+"Status" : "Accept",
+"ExpectedBlocks" : "152"
+}
+```
 **NewTransactionResponse**
-<br>
-<span>{<br>"MessageType" : "NewTransactionResponse",
-                               <br>"AppIDMessage" : "WAYFARER_V1",
-                               <br>"DeviceIP" : "192.168.1.12",
-                               <br>"Status" : "Accept"
-                               <br>}</span>
-<br><br>
+```
+{
+"MessageType" : "NewTransactionResponse",
+"AppIDMessage" : "WAYFARER_V1",
+"DeviceIP" : "192.168.1.12",
+"Status" : "Accept"
+}
+```
 **ValidateNewMinedBlockResponse**
-<br>
-<span>{<br>"MessageType" : "ValidateNewMinedBlockResponse",
-                               <br>"AppIDMessage" : "WAYFARER_V1",
-                               <br>"DeviceIP" : "192.168.1.12",
-                               <br>"Status" : "Accept"
-                               <br>}</span>
-<br><br>
+```
+{
+"MessageType" : "ValidateNewMinedBlockResponse",
+"AppIDMessage" : "WAYFARER_V1",
+"DeviceIP" : "192.168.1.12",
+"Status" : "Accept"
+}
+```
 **TransactionPoolResponse**
-<br>
-<span>{<br>"MessageType" : "TransactionPoolResponse",
-                               <br>"AppIDMessage" : "WAYFARER_V1",
-                               <br>"DeviceIP" : "192.168.1.12",
-                               <br>"Status" : "Accept",
-                               <br>"Transactions" : "[transact1],[transact2]...[transactN]"
-                               <br>}</span>
-<br><br>
+```
+{
+"MessageType" : "TransactionPoolResponse",
+"AppIDMessage" : "WAYFARER_V1",
+"DeviceIP" : "192.168.1.12",
+"Status" : "Accept",
+"Transactions" : "[transact1],[transact2]...[transactN]"
+}
+```
 **BlockResponse**
-<br>
-<span>{<br>"MessageType" : "BlockResponse",
-                               <br>"AppIDMessage" : "WAYFARER_V1",
-                               <br>"DeviceIP" : "192.168.1.12",
-                               <br>"Status" : "Accept",
-                               <br>"Timestamp" : "1717085175123",
-                               <br>"PrevHash" : "12FF3...BDD",
-                               <br>"Hash" : "95201...29C",
-                               <br>"Index" : "95",
-                               <br>"Nonce" : "120021",
-                               <br>"Transactions" : "[transact1],[transact2]...[transactN]",
-                               <br>"Miner" : "AE283F...C10"
-                               <br>}</span>
-<br><br>
+```
+{
+"MessageType" : "BlockResponse",
+"AppIDMessage" : "WAYFARER_V1",
+"DeviceIP" : "192.168.1.12",
+"Status" : "Accept",
+"Timestamp" : "1717085175123",
+"PrevHash" : "12FF3...BDD",
+"Hash" : "95201...29C",
+"Index" : "95",
+"Nonce" : "120021",
+"Transactions" : "[transact1],[transact2]...[transactN]",
+"Miner" : "AE283F...C10"
+}
+```
 ## Complex Code Techniques Used - According to AQA's Coursework Specification*
 <span>*AQA Non-Exam Assessment in A Level Computer Science has a fully detailed mark scheme and specification where all requirements and details on what is expected from students is laid out. This document can be found here: [https://www.aqa.org.uk/subjects/computer-science-and-it/as-and-a-level/computer-science-7516-7517/subject-content-a-level/non-exam-assessment-the-computing-practical-project](https://www.aqa.org.uk/subjects/computer-science-and-it/as-and-a-level/computer-science-7516-7517/subject-content-a-level/non-exam-assessment-the-computing-practical-project)</span>
 
